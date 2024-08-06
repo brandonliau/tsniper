@@ -1,0 +1,126 @@
+package main
+
+import (
+	"database/sql"
+	"fmt"
+	"sort"
+	"time"
+)
+
+func (runTimeData RunTimeData) AddSnipe(index string, memberID string, campus string, season string) {
+	query := "INSERT INTO snipes (course_index, memberID, campus, season) VALUES (?, ?, ?, ?)"
+	runTimeData.Db.Exec(query, index, memberID, campus, season)
+}
+
+func (runTimeData RunTimeData) RemoveSnipe(index string, memberID string, season string) {
+	query := "DELETE FROM snipes WHERE course_index = ? AND memberID = ? AND season = ?"
+	runTimeData.Db.Exec(query, index, memberID, season)
+}
+
+func (runTimeData RunTimeData) ClearSnipe(memberID string) {
+	query := "DELETE FROM snipes WHERE memberID = ?"
+	runTimeData.Db.Exec(query, memberID)
+}
+
+func (runTimeData RunTimeData) CheckSnipe(memberID string) [][]string {
+	snipes := make([][]string, 0)
+	query := "SELECT course_index, campus, season FROM snipes WHERE memberID = ?"
+	rows, _ := runTimeData.Db.Query(query, memberID)
+	var index, campus, season string
+	for rows.Next() {
+		rows.Scan(&index, &campus, &season)
+		snipes = append(snipes, []string{index, campus, season})
+	}
+	sort.SliceStable(snipes, func(i, j int) bool {
+		return snipes[i][0] < snipes[j][0]
+	})
+	return snipes
+}
+
+func (runTimeData RunTimeData) GetCourseData(index string, campus string, season string) CourseData {
+	query := fmt.Sprintf("SELECT course_index, title, course_string, section, instructors, notes, meeting FROM %s WHERE course_index = ? AND season = ?", campus)
+	row := runTimeData.Db.QueryRow(query, index, season)
+	var course_index, title, courseString, section, instructors, notes, meeting string
+	row.Scan(&course_index, &title, &courseString, &section, &instructors, &notes, &meeting)
+	return CourseData{
+		Title: title, 
+		CourseString: courseString,
+		Index: course_index,
+		Section: section,
+		Instructors: instructors,
+		Notes: notes,
+		Meeting: meeting,
+	}
+}
+
+func (runTimeData RunTimeData) GetSnipeCount(index string, campus string, season string) int {
+	query := fmt.Sprintf("SELECT count(*) FROM %s WHERE course_index = ? AND season = ?", campus)
+	row := runTimeData.Db.QueryRow(query, index, season)
+	var count int
+	row.Scan(&count)
+	return count
+}
+
+func (runTimeData RunTimeData) GetLastOpen(index string, campus string, season string) int64 {
+	query := fmt.Sprintf("SELECT last_open FROM %s WHERE course_index = ? AND season = ?", campus)
+	var lastOpen int64
+	row := runTimeData.Db.QueryRow(query, index, season)
+	row.Scan(&lastOpen)
+	return lastOpen
+}
+
+func (runTimeData RunTimeData) GetLastOpens(campus string, season string) map[string]int64 {
+	lastOpens := make(map[string]int64)
+	query := fmt.Sprintf("SELECT course_index, last_open FROM %s WHERE season = ?", campus)
+	var course_index string
+	var lastOpen int64
+	rows, _ := runTimeData.Db.Query(query, season)
+	for rows.Next() {
+		rows.Scan(&course_index, &lastOpen)
+		if lastOpen == 0 { // set last_open to unknown
+			lastOpens[course_index] = -1 // course will be set to open (0) in indexing
+		} else {
+			lastOpens[course_index] = lastOpen
+		}
+	}
+	return lastOpens
+}
+
+func (runTimeData RunTimeData) UpdateLastOpen(index string, campus string, season string) {
+	query := fmt.Sprintf("UPDATE %s SET last_open = ? WHERE course_index = ? AND season = ?", campus)
+	runTimeData.Db.Exec(query, time.Now().Unix(), index, season)
+}
+
+func (runTimeData RunTimeData) GetUsersFromIndex(index string, campus string, season string) []string {
+	query := "SELECT memberID FROM snipes WHERE course_index = ? AND season = ?"
+	rows, _ := runTimeData.Db.Query(query, index, season)
+	var users []string
+	var memberID string
+	for rows.Next() {
+		rows.Scan(&memberID)
+		users = append(users, memberID)
+	}
+	return users
+}
+
+func (runTimeData RunTimeData) GetDistinctUsers() *sql.Rows {
+	query := "SELECT DISTINCT memberID FROM snipes"
+	rows, _ := runTimeData.Db.Query(query)
+	return rows
+}
+
+func (runTimeData RunTimeData) GetDistinctSnipes() *sql.Rows {
+	query := "SELECT course_index, campus, season, COUNT(course_index) AS count FROM snipes GROUP BY course_index"
+	rows, _ := runTimeData.Db.Query(query)
+	return rows
+}
+
+func (runTimeData RunTimeData) AreadySniping(index string, memberID string, season string) bool {
+	query := "SELECT 1 FROM snipes WHERE course_index = ? AND memberID = ? AND season = ?"
+	row := runTimeData.Db.QueryRow(query, index, memberID, season)
+	var exist int
+	if err := row.Scan(&exist); err == nil {
+		return true // return true if snipe exists in db
+	}
+	return false // return false if snipe exists in db
+}
