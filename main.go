@@ -19,7 +19,7 @@ var indexingTimer = cron.New()
 
 func main() {
 	var runTimeData RunTimeData
-	runTimeData.InitRunTimeData("./tsniperconfig.json")
+	runTimeData.InitRunTimeData("./config.json")
 	runTimeData.InitCommands()
 	runTimeData.InitHandlers()
 	s, _ = discordgo.New("Bot " + runTimeData.Config.Token)
