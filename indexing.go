@@ -5,10 +5,10 @@ import (
 	"time"
 )
 
-var dayMap = map[string]string {
+var dayMap = map[string]string{
 	"M": "Mon",
 	"T": "Tue",
-	"W": "Wed",	
+	"W": "Wed",
 	"H": "Thu",
 	"F": "Fri",
 	"S": "Sat",
@@ -16,17 +16,16 @@ var dayMap = map[string]string {
 }
 
 var campusMap = map[string]string{
-	"LIVINGSTON": ":orange_square:",
-	"BUSCH": ":blue_square:",
+	"LIVINGSTON":     ":orange_square:",
+	"BUSCH":          ":blue_square:",
 	"COLLEGE AVENUE": ":yellow_square: ",
-	"DOUGLAS/COOK": ":green_square:",
-	"DOWNTOWN NB": "red_square",
-	"OFF CAMPUS": ":white_large_square:",
+	"DOUGLAS/COOK":   ":green_square:",
+	"DOWNTOWN NB":    "red_square",
+	"OFF CAMPUS":     ":white_large_square:",
 }
 
 func (runTimeData *RunTimeData) IndexCourses(campus string, season string) {
 	var rawCourseData []RawCourseData = CoursesAPI(campus, runTimeData.Config.Seasons[season])
-	runTimeData.AllCourses[campus + season] = make(map[string]struct{})
 	lastOpens := runTimeData.GetLastOpens(campus, season)
 	tx, _ := runTimeData.Db.Begin()
 	for _, course := range rawCourseData {
@@ -47,6 +46,8 @@ func (runTimeData *RunTimeData) IndexCourses(campus string, season string) {
 			}
 			if section.OpenStatus {
 				lastOpen = 0
+			} else if !section.OpenStatus && lastOpen == 0 {
+				lastOpen = -1
 			}
 			for _, meeting := range section.MeetingTimes {
 				if meeting.CampusLocation == "O" && meeting.PmCode == "" { // Async class with no meeting time
@@ -76,7 +77,6 @@ func (runTimeData *RunTimeData) IndexCourses(campus string, season string) {
 					meetingData += "Hours by arrangement\n"
 				}
 			}
-			runTimeData.AllCourses[campus + season][index] = struct{}{}
 			query := fmt.Sprintf(
 				"INSERT OR REPLACE INTO %s (course_index, title, course_string, section, instructors, notes, meeting, season, last_open)" +
 				"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", campus)
@@ -86,7 +86,7 @@ func (runTimeData *RunTimeData) IndexCourses(campus string, season string) {
 	_ = tx.Commit()
 }
 
-func (runTimeData RunTimeData) IndexSync() {
+func (runTimeData *RunTimeData) IndexSync() {
 	for _, campus := range runTimeData.Config.CurrentCampuses {
 		for _, season := range runTimeData.Config.CurrentSeasons {
 			runTimeData.IndexCourses(campus, season)

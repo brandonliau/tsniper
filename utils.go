@@ -8,8 +8,9 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"sync"
 	"time"
+
+	"gopkg.in/yaml.v3"
 )
 
 /* API ENDPOINTS */
@@ -39,6 +40,13 @@ func OpenSectionsAPI(campus string, season Season, client *http.Client) []string
 
 func CoursesAPI(campus string, season Season) []RawCourseData {
 	var rawCourseData []RawCourseData
+	defer func() {
+		if r := recover(); r != nil {
+			rawCourseData = make([]RawCourseData, 0)
+			fmt.Printf("Recovered @ %s : %s\n", time.Now().Format("2006-01-02 15:04:05.00000"), r)
+		}
+	}()
+	// fmt.Println(season.Year, season.Term, campus)
 	var url string = fmt.Sprintf(
 		"https://sis.rutgers.edu/soc/api/courses.json?year=%s&term=%s&campus=%s",
 		season.Year,
@@ -56,22 +64,26 @@ func CoursesAPI(campus string, season Season) []RawCourseData {
 }
 
 /* SUPPORT FUNCTIONS */
-func (runTimeData *RunTimeData) InitRunTimeData(filename string) {
-	// load config file
-	rawJson, _ := os.ReadFile(filename)
-	_ = json.Unmarshal(rawJson, &runTimeData.Config)
-	// intialize Tracking and AllCourses maps
-	runTimeData.Tracking = make(map[string]map[string]int)
-	runTimeData.AllCourses = make(map[string]map[string]struct{})
-	runTimeData.PrevOpened = make(map[string][]string)
-	runTimeData.mtx = new(sync.Mutex)
-	// open connection to db
-	db, _ := sql.Open("sqlite", "./database.db")
-	runTimeData.Db = db
+func (runTimeData *RunTimeData) LoadConfig(filename string) {
+	rawYaml, _ := os.ReadFile(filename)
+	_ = yaml.Unmarshal(rawYaml, &runTimeData.Config)
 	fmt.Printf("SUCCESS @ %s : LOAD CONFIG\n", time.Now().Format("2006-01-02 15:04:05.00000"))
 }
 
-func (runTimeData RunTimeData) SyncUsers() {
+func (runTimeData *RunTimeData) InitRunTimeData() {
+	// open connection to db
+	db, _ := sql.Open("sqlite", "./database.db")
+	runTimeData.Db = db
+	fmt.Printf("SUCCESS @ %s : CONNECTED TO DATABASE\n", time.Now().Format("2006-01-02 15:04:05.00000"))
+	// intialize database
+	runTimeData.InitDb()
+	fmt.Printf("SUCCESS @ %s : INITIALIZE DATABASE\n", time.Now().Format("2006-01-02 15:04:05.00000"))
+	// intialize Tracking and PrevOpened maps
+	runTimeData.Tracking = make(map[string]map[string]int)
+	runTimeData.PrevOpened = make(map[string][]string)
+}
+
+func (runTimeData *RunTimeData) SyncUsers() {
 	rows := runTimeData.GetDistinctUsers()
 	var memberID string
 	for rows.Next() {
@@ -111,7 +123,7 @@ func (runTimeData *RunTimeData) UpdateTracking(action int, index string, campus 
 	}
 }
 
-func (runTimeData RunTimeData) SyncTracking() {
+func (runTimeData *RunTimeData) SyncTracking() {
 	for _, campus := range runTimeData.Config.CurrentCampuses {
 		for _, season := range runTimeData.Config.CurrentSeasons {
 			runTimeData.Tracking[campus + season] = make(map[string]int)
@@ -120,7 +132,7 @@ func (runTimeData RunTimeData) SyncTracking() {
 	}
 }
 
-func (runTimeData RunTimeData) GetCampus(memberID string) string {
+func (runTimeData *RunTimeData) GetCampus(memberID string) string {
 	member, _ := s.State.Member(runTimeData.Config.Guild, memberID)
 	roles := member.Roles
 	for _, roleId := range roles {
@@ -137,7 +149,7 @@ func (runTimeData RunTimeData) GetCampus(memberID string) string {
 	return "NB"
 }
 
-func (runTimeData RunTimeData) GetSeason(season string) string {
+func (runTimeData *RunTimeData) GetSeason(season string) string {
 	for k, v := range runTimeData.Config.Seasons {
 		if v.Term + v.Year == season {
 			return k

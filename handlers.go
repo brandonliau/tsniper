@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/url"
+	
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -45,7 +46,7 @@ func (runTimeData *RunTimeData) AddCommandHandler(s *discordgo.Session, i *disco
 			campus = options.Value.(string)
 		}
 	}
-	if _, ok := runTimeData.AllCourses[campus + season][index]; !ok {
+	if ok := runTimeData.CheckCourseExist(index, campus, season); !ok {
 		embed = runTimeData.InvalidAdd(index)
 	} else if runTimeData.AreadySniping(index, memberID, season) {
 		embed = runTimeData.DuplicateAdd(index)
@@ -108,7 +109,7 @@ func (runTimeData *RunTimeData) ClearCommandHandler(s *discordgo.Session, i *dis
 	SendEmbedReponse(s, i, embed)
 }
 
-func (runTimeData RunTimeData) CheckCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func (runTimeData *RunTimeData) CheckCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	var memberID string
 	var embed *discordgo.MessageEmbed
 	if i.Interaction.GuildID != "" {
@@ -129,7 +130,7 @@ func (runTimeData RunTimeData) CheckCommandHandler(s *discordgo.Session, i *disc
 			if lastOpen == -1 {
 				text += fmt.Sprintf(
 					"%s `%s` - %s (**Section %s**) | :eyes: `%d` | `Unknown`\n",
-					runTimeData.Config.Seasons[season].Emoji,
+					emojiMap[season],
 					data.Index,
 					data.Title,
 					data.Section,
@@ -138,7 +139,7 @@ func (runTimeData RunTimeData) CheckCommandHandler(s *discordgo.Session, i *disc
 			} else {
 				text += fmt.Sprintf(
 					"%s `%s` - %s (**Section %s**) | :eyes: `%d` | <t:%d:R>\n",
-					runTimeData.Config.Seasons[season].Emoji,
+					emojiMap[season],
 					data.Index,
 					data.Title,
 					data.Section,
@@ -154,7 +155,7 @@ func (runTimeData RunTimeData) CheckCommandHandler(s *discordgo.Session, i *disc
 	SendEmbedReponse(s, i, embed)
 }
 
-func (runTimeData RunTimeData) SearchCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func (runTimeData *RunTimeData) SearchCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	var memberID, index string
 	var embed *discordgo.MessageEmbed
 	if i.Interaction.GuildID != "" {
@@ -174,7 +175,7 @@ func (runTimeData RunTimeData) SearchCommandHandler(s *discordgo.Session, i *dis
 			campus = options.Value.(string)
 		}
 	}
-	if _, ok := runTimeData.AllCourses[campus + season][index]; ok {
+	if ok := runTimeData.CheckCourseExist(index, campus, season); !ok {
 		course := runTimeData.GetCourseData(index, campus, season)
 		embed = runTimeData.SuccessfulSearch(course)
 	} else {
@@ -183,16 +184,16 @@ func (runTimeData RunTimeData) SearchCommandHandler(s *discordgo.Session, i *dis
 	SendEmbedReponse(s, i, embed)
 }
 
-func (runTimeData RunTimeData) HelpCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func (runTimeData *RunTimeData) HelpCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	SendEmbedReponse(s, i, runTimeData.HelpEmbed())
 }
 
-func (runTimeData RunTimeData) UptimeCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func (runTimeData *RunTimeData) UptimeCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	SendEmbedReponse(s, i, runTimeData.UptimeEmbed())
 }
 
-func (runTimeData RunTimeData) PingCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	SendContentMessage(s, i, fmt.Sprintf("Pong! `%d ms`", int(s.HeartbeatLatency().Milliseconds())))
+func (runTimeData *RunTimeData) PingCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	SendMessageResponse(s, i, fmt.Sprintf("Pong! `%d ms`", int(s.HeartbeatLatency().Milliseconds())))
 }
 
 func (runTimeData *RunTimeData) ResnipeButtonHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -205,10 +206,10 @@ func (runTimeData *RunTimeData) ResnipeButtonHandler(s *discordgo.Session, i *di
 	campus := resnipeURL.Query().Get("campus")
 	season := runTimeData.GetSeason(resnipeURL.Query().Get("semesterSelection"))
 	if ok := runTimeData.AreadySniping(index, memberID, season); ok {
-		SendContentMessage(s, i, fmt.Sprintf("You are already sniping `%s`.", index))
+		SendMessageResponse(s, i, fmt.Sprintf("You are already sniping `%s`.", index))
 	} else {
 		runTimeData.AddSnipe(index, memberID, campus, season)
 		runTimeData.UpdateTracking(1, index, campus, season)
-		SendContentMessage(s, i, fmt.Sprintf("Successfully re-added `%s` to your snipe requests.", index))
+		SendMessageResponse(s, i, fmt.Sprintf("Successfully re-added `%s` to your snipe requests.", index))
 	}
 }

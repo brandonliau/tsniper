@@ -2,23 +2,24 @@ package main
 
 import (
 	"fmt"
+	
 	"github.com/bwmarrin/discordgo"
 )
 
 func SendEmbedReponse(s *discordgo.Session, i *discordgo.InteractionCreate, embed *discordgo.MessageEmbed) {
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse {
+	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData {
+		Data: &discordgo.InteractionResponseData{
 			Flags: discordgo.MessageFlagsEphemeral,
 			Embeds: []*discordgo.MessageEmbed{embed},
 		},
 	})
 }
 
-func SendContentMessage(s *discordgo.Session, i *discordgo.InteractionCreate, content string) {
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse {
+func SendMessageResponse(s *discordgo.Session, i *discordgo.InteractionCreate, content string) {
+	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData {
+		Data: &discordgo.InteractionResponseData{
 			Flags: discordgo.MessageFlagsEphemeral,
 			Content: content,
 		},
@@ -45,7 +46,7 @@ func SendComplexMessage(user *discordgo.User, dmChannel *discordgo.Channel, embe
 	return err
 }
 
-func (runTimeData RunTimeData) CreateRegButton(course CourseData, season Season, campus string) discordgo.Button {
+func (runTimeData *RunTimeData) CreateRegButton(course CourseData, season Season, campus string) discordgo.Button {
 	return discordgo.Button{
 		Label: "Register",
 		Style: discordgo.LinkButton,

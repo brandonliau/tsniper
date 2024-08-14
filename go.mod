@@ -5,6 +5,7 @@ go 1.22.2
 require (
 	github.com/bwmarrin/discordgo v0.28.1
 	github.com/robfig/cron/v3 v3.0.1
+	gopkg.in/yaml.v3 v3.0.1
 	modernc.org/sqlite v1.29.7
 )
 

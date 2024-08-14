@@ -2,12 +2,13 @@ package main
 
 import (
 	"strings"
+	
 	"github.com/bwmarrin/discordgo"
 )
 
 var Commands []*discordgo.ApplicationCommand
 
-func (runTimeData RunTimeData) SeasonChoiceOptions() []*discordgo.ApplicationCommandOptionChoice {
+func (runTimeData *RunTimeData) SeasonChoiceOptions() []*discordgo.ApplicationCommandOptionChoice {
 	seasonChoices := make([]*discordgo.ApplicationCommandOptionChoice, 0)
 	for _, season := range runTimeData.Config.CurrentSeasons {
 		data := discordgo.ApplicationCommandOptionChoice{
@@ -19,7 +20,7 @@ func (runTimeData RunTimeData) SeasonChoiceOptions() []*discordgo.ApplicationCom
 	return seasonChoices
 }
 
-func (runTimeData RunTimeData) CampusChoiceOptions() []*discordgo.ApplicationCommandOptionChoice {
+func (runTimeData *RunTimeData) CampusChoiceOptions() []*discordgo.ApplicationCommandOptionChoice {
 	campusName := map[string]string{
 		"NB": "new brunswick",
 		"NK": "newark",
@@ -36,7 +37,7 @@ func (runTimeData RunTimeData) CampusChoiceOptions() []*discordgo.ApplicationCom
 	return campusChoices
 }
 
-func (runTimeData RunTimeData) InitCommands() {
+func (runTimeData *RunTimeData) InitCommands() {
 	Commands = []*discordgo.ApplicationCommand{
 		{
 			Name: "add",

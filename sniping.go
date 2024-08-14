@@ -16,8 +16,8 @@ func (runTimeData *RunTimeData) GetOpenSections(openSections chan []string, wg *
 		data = append(data, campus + season)
 		openSections <- data
 	}
-	runTimeData.mtx.Lock()
-	defer runTimeData.mtx.Unlock()
+	runTimeData.PrevOpenLock.Lock()
+	defer runTimeData.PrevOpenLock.Unlock()
 	if len(runTimeData.PrevOpened[campus + season]) == 0 {
 		runTimeData.PrevOpened[campus + season] = openData
 	}

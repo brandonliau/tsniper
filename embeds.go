@@ -3,6 +3,7 @@ package main
 import(
 	"fmt"
 	"time"
+	
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -12,8 +13,15 @@ var colorMap = map[string]int {
 	"red": 0xe74d3b,
 }
 
+var emojiMap = map[string]string {
+	"spring": ":herb:",
+	"summer": ":sunny:",
+	"fall": ":fallen_leaf:", 
+	"winter": ":snowflake:",
+}
+
 // /* ADD EMBEDS */
-func (runTimeData RunTimeData) InvalidAdd(index string) *discordgo.MessageEmbed {
+func (runTimeData *RunTimeData) InvalidAdd(index string) *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title: "Invalid Request!",
 		Description: fmt.Sprintf("`%s` does not exist.", index),
@@ -27,7 +35,7 @@ func (runTimeData RunTimeData) InvalidAdd(index string) *discordgo.MessageEmbed 
 	}
 }
 
-func (runTimeData RunTimeData) DuplicateAdd(index string) *discordgo.MessageEmbed {
+func (runTimeData *RunTimeData) DuplicateAdd(index string) *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title: "Duplicate Request!",
 		Description: fmt.Sprintf("You are already sniping `%s`.", index),
@@ -41,7 +49,7 @@ func (runTimeData RunTimeData) DuplicateAdd(index string) *discordgo.MessageEmbe
 	}
 }
 
-func (runTimeData RunTimeData) SuccessfulAdd(courseData CourseData) *discordgo.MessageEmbed {
+func (runTimeData *RunTimeData) SuccessfulAdd(courseData CourseData) *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title: "Successfully Added Request!",
 		Description: fmt.Sprintf(
@@ -61,7 +69,7 @@ func (runTimeData RunTimeData) SuccessfulAdd(courseData CourseData) *discordgo.M
 }
 
 // /* REMOVE EMBEDS */
-func (runTimeData RunTimeData) InvalidRemove(index string) *discordgo.MessageEmbed {
+func (runTimeData *RunTimeData) InvalidRemove(index string) *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title: "Invalid Request!",
 		Description: fmt.Sprintf("You are not currently sniping `%s`.", index),
@@ -75,7 +83,7 @@ func (runTimeData RunTimeData) InvalidRemove(index string) *discordgo.MessageEmb
 	}
 }
 
-func (runTimeData RunTimeData) SuccessfulRemove(courseData CourseData) *discordgo.MessageEmbed {
+func (runTimeData *RunTimeData) SuccessfulRemove(courseData CourseData) *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title: "Successfully Removed Request!",
 		Description: fmt.Sprintf(
@@ -95,7 +103,7 @@ func (runTimeData RunTimeData) SuccessfulRemove(courseData CourseData) *discordg
 }
 
 // /* CLEAR EMBEDS */
-func (runTimeData RunTimeData) InvalidClear() *discordgo.MessageEmbed {
+func (runTimeData *RunTimeData) InvalidClear() *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title: "Invalid Request!",
 		Description: "You have no active snipe requests.",
@@ -109,7 +117,7 @@ func (runTimeData RunTimeData) InvalidClear() *discordgo.MessageEmbed {
 	}
 }
 
-func (runTimeData RunTimeData) SuccessfulClear() *discordgo.MessageEmbed {
+func (runTimeData *RunTimeData) SuccessfulClear() *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title: "Success!",
 		Description: "All active snipes requests have been removed.",
@@ -124,7 +132,7 @@ func (runTimeData RunTimeData) SuccessfulClear() *discordgo.MessageEmbed {
 }
 
 // /* CHECK EMBEDS */
-func (runTimeData RunTimeData) InvalidCheck() *discordgo.MessageEmbed {
+func (runTimeData *RunTimeData) InvalidCheck() *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title: "Invalid Request!",
 		Description: "You have no active snipe requests.",
@@ -138,7 +146,7 @@ func (runTimeData RunTimeData) InvalidCheck() *discordgo.MessageEmbed {
 	}
 }
 
-func (runTimeData RunTimeData) SuccessfulCheck(text string) *discordgo.MessageEmbed {
+func (runTimeData *RunTimeData) SuccessfulCheck(text string) *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title: "Active Requests",
 		Description: text,
@@ -150,7 +158,7 @@ func (runTimeData RunTimeData) SuccessfulCheck(text string) *discordgo.MessageEm
 }
 
 // /* SEARCH EMBEDS */
-func (runTimeData RunTimeData) InvalidSearch(index string) *discordgo.MessageEmbed {
+func (runTimeData *RunTimeData) InvalidSearch(index string) *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title: "Invalid Request!",
 		Description: fmt.Sprintf("`%s` does not exist.", index),
@@ -164,7 +172,7 @@ func (runTimeData RunTimeData) InvalidSearch(index string) *discordgo.MessageEmb
 	}
 }
 
-func (runTimeData RunTimeData) SuccessfulSearch(course CourseData) *discordgo.MessageEmbed {
+func (runTimeData *RunTimeData) SuccessfulSearch(course CourseData) *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title: fmt.Sprintf("%s (`%s`)", course.Title, course.CourseString),
 		Color: colorMap["blue"],
@@ -210,7 +218,7 @@ func (runTimeData RunTimeData) SuccessfulSearch(course CourseData) *discordgo.Me
 }
 
 // /* DEBUG EMBEDS */
-func (runTimeData RunTimeData) HelpEmbed() *discordgo.MessageEmbed {
+func (runTimeData *RunTimeData) HelpEmbed() *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title: "Commands",
 		Color: colorMap["blue"],
@@ -253,7 +261,7 @@ func (runTimeData RunTimeData) HelpEmbed() *discordgo.MessageEmbed {
 	}
 }
 
-func (runTimeData RunTimeData) UptimeEmbed() *discordgo.MessageEmbed {
+func (runTimeData *RunTimeData) UptimeEmbed() *discordgo.MessageEmbed {
 	diff := time.Now().Unix() - runTimeData.StartTime
 	return &discordgo.MessageEmbed{
 		Title: "SnipeR Uptime",
@@ -274,7 +282,7 @@ func (runTimeData RunTimeData) UptimeEmbed() *discordgo.MessageEmbed {
 }
 
 // /* SNIPE EMBEDS */
-func (runTimeData RunTimeData) SnipeEmbed(course CourseData) *discordgo.MessageEmbed {
+func (runTimeData *RunTimeData) SnipeEmbed(course CourseData) *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title: fmt.Sprintf("%s (Section %s) has opened!", course.Title, course.Section),
 		Color: colorMap["blue"],
@@ -304,7 +312,7 @@ func (runTimeData RunTimeData) SnipeEmbed(course CourseData) *discordgo.MessageE
 	}
 }
 
-func (runTimeData RunTimeData) JoinEmbed(user *discordgo.User) *discordgo.MessageEmbed {
+func (runTimeData *RunTimeData) JoinEmbed(user *discordgo.User) *discordgo.MessageEmbed {
 	guild, _ := s.State.Guild(runTimeData.Config.Guild)
 	return &discordgo.MessageEmbed{
 		Title: "Welcome to the TSniper server!",

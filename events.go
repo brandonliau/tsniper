@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"time"
+
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -31,10 +32,9 @@ func (runTimeData *RunTimeData) InteractionHandler(s *discordgo.Session, i *disc
 			command(s, i)
 		}
 	}
-	// fmt.Println(runTimeData.Tracking) // print tracking
 }
 
-func (runTimeData RunTimeData) OnMemberJoin(s *discordgo.Session, g *discordgo.GuildMemberAdd) {
+func (runTimeData *RunTimeData) OnMemberJoin(s *discordgo.Session, g *discordgo.GuildMemberAdd) {
 	embed := runTimeData.JoinEmbed(g.Member.User)
 	s.ChannelMessageSendComplex(
 		runTimeData.Config.Boarding,
@@ -44,7 +44,7 @@ func (runTimeData RunTimeData) OnMemberJoin(s *discordgo.Session, g *discordgo.G
 	)
 }
 
-func (runTimeData RunTimeData) OnMemberRemove(s *discordgo.Session, g *discordgo.GuildMemberRemove) {
+func (runTimeData *RunTimeData) OnMemberRemove(s *discordgo.Session, g *discordgo.GuildMemberRemove) {
 	runTimeData.ClearSnipe(g.Member.User.ID)
 	runTimeData.SyncTracking()
 }

@@ -38,28 +38,26 @@ type CourseData struct {
 }
 
 type Season struct {
-	Name   string	`json:"name"`
-	Term   string	`json:"term"`
-	Year   string	`json:"year"`
-	Emoji  string	`json:"emoji"`
+	Name   string	`yaml:"name"`
+	Term   string	`yaml:"term"`
+	Year   string	`yaml:"year"`
 }
 
 type Config struct {
-	Token             string			`json:"TOKEN"`
-	Guild			  string 			`json:"GUILD"`
-	Image             string			`json:"IMAGE"`
-	Boarding		  string			`json:"BOARDING"`
-	CurrentCampuses   []string			`json:"CURRENT_CAMPUSES"`
-	CurrentSeasons    []string			`json:"CURRENT_SEASONS"`
-	Seasons			  map[string]Season `json:"SEASONS"`
+	Token             string			`yaml:"token"`
+	Guild			  string 			`yaml:"guild"`
+	Boarding		  string			`yaml:"boarding"`
+	Image             string			`yaml:"image"`
+	CurrentCampuses   []string			`yaml:"current_campuses"`
+	CurrentSeasons    []string			`yaml:"current_seasons"`
+	Seasons			  map[string]Season `yaml:"seasons"`
 }
 
 type RunTimeData struct {
-	mtx				 *sync.Mutex
+	PrevOpenLock	 sync.RWMutex
 	Config			 Config
 	Db				 *sql.DB
 	Tracking		 map[string]map[string]int
-	AllCourses		 map[string]map[string]struct{}
 	PrevOpened		 map[string][]string
 	Registered		 map[string]string
 	StartTime		 int64
