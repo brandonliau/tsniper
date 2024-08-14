@@ -14,10 +14,10 @@ var colorMap = map[string]int {
 }
 
 var emojiMap = map[string]string {
-	"spring": ":herb:",
-	"summer": ":sunny:",
-	"fall": ":fallen_leaf:", 
-	"winter": ":snowflake:",
+	"SPRING": ":herb:",
+	"SUMMER": ":sunny:",
+	"FALL": ":fallen_leaf:", 
+	"WINTER": ":snowflake:",
 }
 
 // /* ADD EMBEDS */

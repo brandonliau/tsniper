@@ -136,9 +136,9 @@ func (runTimeData *RunTimeData) GetDistinctSnipes() *sql.Rows {
 	return rows
 }
 
-func (runTimeData *RunTimeData) AreadySniping(index string, memberID string, season string) bool {
-	query := "SELECT 1 FROM snipes WHERE course_index = ? AND memberID = ? AND season = ?"
-	row := runTimeData.Db.QueryRow(query, index, memberID, season)
+func (runTimeData *RunTimeData) AreadySniping(memberID string, index string, campus string, season string) bool {
+	query := "SELECT 1 FROM snipes WHERE memberID = ? AND course_index = ? AND campus = ? AND season = ?"
+	row := runTimeData.Db.QueryRow(query, memberID, index, campus, season)
 	var exist int
 	err := row.Scan(&exist)
 	return err == nil // return true if snipe exists in db

@@ -9,7 +9,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/robfig/cron/v3"
 	_ "modernc.org/sqlite"
-	// "Tsniper/debug"
+	"Tsniper/debug"
 )
 
 var s *discordgo.Session
@@ -33,11 +33,11 @@ func main() {
 	
 	_ = s.Open()
 	fmt.Printf("SUCCESS @ %s : ESTABLISH WEBSOCKET CONNECTION\n", time.Now().Format("2006-01-02 15:04:05.00000"))
-	registered, _ := s.ApplicationCommandBulkOverwrite(s.State.User.ID, "", Commands)
+	// registered, _ := s.ApplicationCommandBulkOverwrite(s.State.User.ID, "", Commands)
 	fmt.Printf("SUCCESS @ %s : REGISTER ALL COMMANDS\n", time.Now().Format("2006-01-02 15:04:05.00000"))
 
 	// debug.SaveCommands(registered, "commands.json")
-	// registered := debug.LoadCommands("./commands.json")
+	registered := debug.LoadCommands("./commands.json")
 
 	runTimeData.Registered = make(map[string]string)
 	for _, command := range registered {
@@ -55,6 +55,6 @@ func main() {
 
 	_ = s.Close()
 	fmt.Printf("SUCCESS @ %s : CLOSE WEBSOCKET CONNECTION\n", time.Now().Format("2006-01-02 15:04:05.00000"))
-	_, _ = s.ApplicationCommandBulkOverwrite(s.State.User.ID, "", nil)
-	fmt.Printf("SUCCESS @ %s : REMOVE ALL COMMANDS\n", time.Now().Format("2006-01-02 15:04:05.00000"))
+	// _, _ = s.ApplicationCommandBulkOverwrite(s.State.User.ID, "", nil)
+	// fmt.Printf("SUCCESS @ %s : REMOVE ALL COMMANDS\n", time.Now().Format("2006-01-02 15:04:05.00000"))
 }

@@ -48,7 +48,7 @@ func (runTimeData *RunTimeData) AddCommandHandler(s *discordgo.Session, i *disco
 	}
 	if ok := runTimeData.CheckCourseExist(index, campus, season); !ok {
 		embed = runTimeData.InvalidAdd(index)
-	} else if runTimeData.AreadySniping(index, memberID, season) {
+	} else if runTimeData.AreadySniping(memberID, index, campus, season) {
 		embed = runTimeData.DuplicateAdd(index)
 	} else {
 		runTimeData.AddSnipe(index, memberID, campus, season)
@@ -79,7 +79,7 @@ func (runTimeData *RunTimeData) RemoveCommandHandler(s *discordgo.Session, i *di
 			campus = options.Value.(string)
 		}
 	}
-	if !runTimeData.AreadySniping(index, memberID, season) {
+	if !runTimeData.AreadySniping(memberID, index, campus, season) {
 		embed = runTimeData.InvalidRemove(index)
 	} else {
 		runTimeData.RemoveSnipe(index, memberID, season)
@@ -175,7 +175,7 @@ func (runTimeData *RunTimeData) SearchCommandHandler(s *discordgo.Session, i *di
 			campus = options.Value.(string)
 		}
 	}
-	if ok := runTimeData.CheckCourseExist(index, campus, season); !ok {
+	if ok := runTimeData.CheckCourseExist(index, campus, season); ok {
 		course := runTimeData.GetCourseData(index, campus, season)
 		embed = runTimeData.SuccessfulSearch(course)
 	} else {
@@ -205,7 +205,7 @@ func (runTimeData *RunTimeData) ResnipeButtonHandler(s *discordgo.Session, i *di
 	index := resnipeURL.Query().Get("indexList")
 	campus := resnipeURL.Query().Get("campus")
 	season := runTimeData.GetSeason(resnipeURL.Query().Get("semesterSelection"))
-	if ok := runTimeData.AreadySniping(index, memberID, season); ok {
+	if runTimeData.AreadySniping(memberID, index, campus, season) {
 		SendMessageResponse(s, i, fmt.Sprintf("You are already sniping `%s`.", index))
 	} else {
 		runTimeData.AddSnipe(index, memberID, campus, season)
