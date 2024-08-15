@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"sync"
 )
 
 type RawCourseData struct {
@@ -54,11 +53,9 @@ type Config struct {
 }
 
 type RunTimeData struct {
-	PrevOpenLock	 sync.RWMutex
 	Config			 Config
 	Db				 *sql.DB
 	Tracking		 map[string]map[string]int
-	PrevOpened		 map[string][]string
 	Registered		 map[string]string
 	StartTime		 int64
 }

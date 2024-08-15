@@ -80,7 +80,6 @@ func (runTimeData *RunTimeData) InitRunTimeData() {
 	fmt.Printf("SUCCESS @ %s : INITIALIZE DATABASE\n", time.Now().Format("2006-01-02 15:04:05.00000"))
 	// intialize Tracking and PrevOpened maps
 	runTimeData.Tracking = make(map[string]map[string]int)
-	runTimeData.PrevOpened = make(map[string][]string)
 }
 
 func (runTimeData *RunTimeData) SyncUsers() {
