@@ -10,8 +10,6 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/robfig/cron/v3"
 	_ "modernc.org/sqlite"
-	
-	"encoding/json"
 )
 
 var s *discordgo.Session
@@ -35,11 +33,8 @@ func main() {
 	
 	_ = s.Open()
 	fmt.Printf("SUCCESS @ %s : ESTABLISH WEBSOCKET CONNECTION\n", time.Now().Format("2006-01-02 15:04:05.00000"))
-	// registered, _ := s.ApplicationCommandBulkOverwrite(s.State.User.ID, "", Commands)
+	registered, _ := s.ApplicationCommandBulkOverwrite(s.State.User.ID, "", Commands)
 	fmt.Printf("SUCCESS @ %s : REGISTER ALL COMMANDS\n", time.Now().Format("2006-01-02 15:04:05.00000"))
-
-	// SaveCommands(registered, "commands.json")
-	registered := LoadCommands("./commands.json")
 
 	runTimeData.Registered = make(map[string]string)
 	for _, command := range registered {
@@ -57,18 +52,6 @@ func main() {
 
 	_ = s.Close()
 	fmt.Printf("SUCCESS @ %s : CLOSE WEBSOCKET CONNECTION\n", time.Now().Format("2006-01-02 15:04:05.00000"))
-	// _, _ = s.ApplicationCommandBulkOverwrite(s.State.User.ID, "", nil)
-	// fmt.Printf("SUCCESS @ %s : REMOVE ALL COMMANDS\n", time.Now().Format("2006-01-02 15:04:05.00000"))
-}
-
-func SaveCommands(commands []*discordgo.ApplicationCommand, filename string) {
-	updatedJson, _ := json.MarshalIndent(commands, "", "  ")
-	os.WriteFile(filename, updatedJson, 0644)
-}
-
-func LoadCommands(filename string) []*discordgo.ApplicationCommand {
-	var registered = []*discordgo.ApplicationCommand{}
-	rawJson, _ := os.ReadFile(filename)
-	_ = json.Unmarshal(rawJson, &registered)
-	return registered
+	_, _ = s.ApplicationCommandBulkOverwrite(s.State.User.ID, "", nil)
+	fmt.Printf("SUCCESS @ %s : REMOVE ALL COMMANDS\n", time.Now().Format("2006-01-02 15:04:05.00000"))
 }
