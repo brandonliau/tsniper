@@ -46,7 +46,6 @@ func CoursesAPI(campus string, season Season) []RawCourseData {
 			fmt.Printf("Recovered @ %s : %s\n", time.Now().Format("2006-01-02 15:04:05.00000"), r)
 		}
 	}()
-	// fmt.Println(season.Year, season.Term, campus)
 	var url string = fmt.Sprintf(
 		"https://sis.rutgers.edu/soc/api/courses.json?year=%s&term=%s&campus=%s",
 		season.Year,

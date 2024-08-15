@@ -11,7 +11,6 @@ func (runTimeData *RunTimeData) GetOpenSections(openSections chan []string, camp
 	for {
 		select {
 		case <- snipeTicker.C:
-			// fmt.Println(campus, season, time.Now().Format("2006-01-02 15:04:05.00000"))
 			openData := OpenSectionsAPI(campus, runTimeData.Config.Seasons[season], client)
 			trackingData := GetKeys(runTimeData.Tracking[campus + season])
 			openCourses := Intersection(openData, trackingData)
@@ -22,11 +21,9 @@ func (runTimeData *RunTimeData) GetOpenSections(openSections chan []string, camp
 			openDiff := Difference(openData, prevOpened)
 			closeDiff := Difference(prevOpened, openData)
 			for _, index := range openDiff {
-				fmt.Println(index)
 				runTimeData.UpdateLastOpen(0, index, campus, season)
 			}
 			for _, index := range closeDiff {
-				fmt.Println(index)
 				runTimeData.UpdateLastOpen(time.Now().Unix(), index, campus, season)
 			}
 			prevOpened = openData
