@@ -7,7 +7,7 @@ import (
 )
 
 func (runTimeData *RunTimeData) GetOpenSections(openSections chan []string, campus string, season string, client *http.Client) {
-	prevOpened := make([]string, 0)
+	prevOpened := OpenSectionsAPI(campus, runTimeData.Config.Seasons[season], client)
 	for {
 		select {
 		case <- snipeTicker.C:
@@ -16,17 +16,20 @@ func (runTimeData *RunTimeData) GetOpenSections(openSections chan []string, camp
 			trackingData := GetKeys(runTimeData.Tracking[campus + season])
 			openCourses := Intersection(openData, trackingData)
 			if len(openCourses) > 0 {
-				openCourses = append(openCourses, campus + season)
+				openCourses = append(openCourses, campus + season) // append [campus + season] for processing loop
 				openSections <- openCourses
 			}
-			if len(prevOpened) == 0 {
-				prevOpened = openData
-			}
+			openDiff := Difference(openData, prevOpened)
 			closeDiff := Difference(prevOpened, openData)
-			prevOpened = openData
-			for _, index := range closeDiff {
-				runTimeData.UpdateLastOpen(index, campus, season)
+			for _, index := range openDiff {
+				fmt.Println(index)
+				runTimeData.UpdateLastOpen(0, index, campus, season)
 			}
+			for _, index := range closeDiff {
+				fmt.Println(index)
+				runTimeData.UpdateLastOpen(time.Now().Unix(), index, campus, season)
+			}
+			prevOpened = openData
 		case <-snipeClose:
 			close(openSections)
 			return

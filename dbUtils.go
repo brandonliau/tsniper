@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"sort"
-	"time"
 )
 
 func (runTimeData *RunTimeData) InitDb() {
@@ -107,9 +106,9 @@ func (runTimeData *RunTimeData) GetLastOpens(campus string, season string) map[s
 	return lastOpens
 }
 
-func (runTimeData *RunTimeData) UpdateLastOpen(index string, campus string, season string) {
+func (runTimeData *RunTimeData) UpdateLastOpen(time int64, index string, campus string, season string) {
 	query := fmt.Sprintf("UPDATE %s SET last_open = ? WHERE course_index = ? AND season = ?", campus)
-	runTimeData.Db.Exec(query, time.Now().Unix(), index, season)
+	runTimeData.Db.Exec(query, time, index, season)
 }
 
 func (runTimeData *RunTimeData) GetUsersFromIndex(index string, campus string, season string) []string {
