@@ -219,6 +219,7 @@ func (runTimeData *RunTimeData) SuccessfulSearch(course CourseData) *discordgo.M
 
 // /* DEBUG EMBEDS */
 func (runTimeData *RunTimeData) HelpEmbed() *discordgo.MessageEmbed {
+	registered := runTimeData.GetRegisteredCommands()
 	return &discordgo.MessageEmbed{
 		Title: "Commands",
 		Color: colorMap["blue"],
@@ -231,11 +232,11 @@ func (runTimeData *RunTimeData) HelpEmbed() *discordgo.MessageEmbed {
 					"</clear:%s> - Remove all active snipe requests.\n" +
 					"</check:%s> - View all active snipe requests.\n" +
 					"</search:%s> - View course information for given index.",
-					runTimeData.Registered["add"],
-					runTimeData.Registered["remove"],
-					runTimeData.Registered["clear"],
-					runTimeData.Registered["check"],
-					runTimeData.Registered["search"],
+					registered["add"],
+					registered["remove"],
+					registered["clear"],
+					registered["check"],
+					registered["search"],
 				),
 				Inline: false,
 			},
@@ -245,9 +246,9 @@ func (runTimeData *RunTimeData) HelpEmbed() *discordgo.MessageEmbed {
 					"</help:%s> - List all commands.\n" +
 					"</uptime:%s> - Check bot uptime.\n" +
 					"</ping:%s> - Check bot latency.",
-					runTimeData.Registered["help"],
-					runTimeData.Registered["uptime"],
-					runTimeData.Registered["ping"],
+					registered["help"],
+					registered["uptime"],
+					registered["ping"],
 				),
 				Inline: false,
 			},

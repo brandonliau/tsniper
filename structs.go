@@ -56,6 +56,5 @@ type RunTimeData struct {
 	Config			 Config
 	Db				 *sql.DB
 	Tracking		 map[string]map[string]int
-	Registered		 map[string]string
 	StartTime		 int64
 }

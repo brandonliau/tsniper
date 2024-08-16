@@ -34,13 +34,8 @@ func main() {
 	_ = s.Open()
 	fmt.Printf("SUCCESS @ %s : ESTABLISH WEBSOCKET CONNECTION\n", time.Now().Format("2006-01-02 15:04:05.00000"))
 	registered, _ := s.ApplicationCommandBulkOverwrite(s.State.User.ID, "", Commands)
+	runTimeData.UpdateRegisteredCommands(registered)
 	fmt.Printf("SUCCESS @ %s : REGISTER ALL COMMANDS\n", time.Now().Format("2006-01-02 15:04:05.00000"))
-
-	runTimeData.Registered = make(map[string]string)
-	for _, command := range registered {
-		temp := *command
-		runTimeData.Registered[temp.Name] = temp.ID
-	}
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)

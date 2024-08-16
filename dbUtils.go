@@ -4,11 +4,16 @@ import (
 	"database/sql"
 	"fmt"
 	"sort"
+
+	"github.com/bwmarrin/discordgo"
 )
 
 func (runTimeData *RunTimeData) InitDb() {
 	snipeDb := "CREATE TABLE IF NOT EXISTS snipes (course_index TEXT, memberID TEXT, campus TEXT, season TEXT)"
 	stmt, _ := runTimeData.Db.Prepare(snipeDb)
+	stmt.Exec()
+	registeredDb := "CREATE TABLE IF NOT EXISTS commands (command_name TEXT, command_id TEXT)"
+	stmt, _ = runTimeData.Db.Prepare(registeredDb)
 	stmt.Exec()
 	for _, campus := range runTimeData.Config.CurrentCampuses {
 		campusQuery := fmt.Sprintf(
@@ -141,4 +146,23 @@ func (runTimeData *RunTimeData) AreadySniping(memberID string, index string, cam
 	var exist int
 	err := row.Scan(&exist)
 	return err == nil // return true if snipe exists in db
+}
+
+func (runTimeData *RunTimeData) UpdateRegisteredCommands(registered []*discordgo.ApplicationCommand) {
+	for _, command := range registered {
+		query := "INSERT INTO commands (command_name, command_id) VALUES (?, ?)"
+		runTimeData.Db.Exec(query, command.Name, command.ID)
+	}
+}
+
+func (runTimeData *RunTimeData) GetRegisteredCommands() map[string]string {
+	registered := make(map[string]string)
+	query := "SELECT command_name, command_id FROM commands"
+	rows, _ := runTimeData.Db.Query(query)
+	var name, id string
+	for rows.Next() {
+		rows.Scan(&name, &id)
+		registered[name] = id
+	}
+	return registered
 }
