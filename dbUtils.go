@@ -149,6 +149,7 @@ func (runTimeData *RunTimeData) AreadySniping(memberID string, index string, cam
 }
 
 func (runTimeData *RunTimeData) UpdateRegisteredCommands(registered []*discordgo.ApplicationCommand) {
+	runTimeData.Db.Exec("DELETE FROM commands")
 	for _, command := range registered {
 		query := "INSERT INTO commands (command_name, command_id) VALUES (?, ?)"
 		runTimeData.Db.Exec(query, command.Name, command.ID)
