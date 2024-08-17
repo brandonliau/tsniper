@@ -77,11 +77,12 @@ func (runTimeData *RunTimeData) InitRunTimeData() {
 	// intialize database
 	runTimeData.InitDb()
 	fmt.Printf("SUCCESS @ %s : INITIALIZE DATABASE\n", time.Now().Format("2006-01-02 15:04:05.00000"))
-	// intialize Tracking and PrevOpened maps
+	// intialize Tracking map
 	runTimeData.Tracking = make(map[string]map[string]int)
 }
 
 func (runTimeData *RunTimeData) SyncUsers() {
+	// clear snipes from users that left
 	rows := runTimeData.GetDistinctUsers()
 	var memberID string
 	for rows.Next() {

@@ -41,7 +41,7 @@ func (runTimeData *RunTimeData) ClearSnipe(memberID string) {
 	runTimeData.Db.Exec(query, memberID)
 }
 
-func (runTimeData *RunTimeData) CheckSnipe(memberID string) [][]string {
+func (runTimeData *RunTimeData) GetSnipes(memberID string) [][]string {
 	snipes := make([][]string, 0)
 	query := "SELECT course_index, campus, season FROM snipes WHERE memberID = ?"
 	rows, _ := runTimeData.Db.Query(query, memberID)

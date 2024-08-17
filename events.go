@@ -17,7 +17,7 @@ func (runTimeData *RunTimeData) OnReady(s *discordgo.Session, r *discordgo.Ready
 	indexingTimer.AddFunc("0 13 * * *", runTimeData.IndexSync)
 	go runTimeData.SnipeCheck()
 	indexingTimer.Start()
-	s.UpdateCustomStatus("🎯 Locked & Loaded")
+	s.UpdateCustomStatus("👁️‍🗨️ Monitoring...")
 	fmt.Println("***************************** BOT RUNNING *****************************")
 }
 

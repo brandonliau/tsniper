@@ -20,7 +20,7 @@ var emojiMap = map[string]string {
 	"WINTER": ":snowflake:",
 }
 
-// /* ADD EMBEDS */
+/* ADD EMBEDS */
 func (runTimeData *RunTimeData) InvalidAdd(index string) *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title: "Invalid Request!",
@@ -68,7 +68,7 @@ func (runTimeData *RunTimeData) SuccessfulAdd(courseData CourseData) *discordgo.
 	}
 }
 
-// /* REMOVE EMBEDS */
+/* REMOVE EMBEDS */
 func (runTimeData *RunTimeData) InvalidRemove(index string) *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title: "Invalid Request!",
@@ -102,7 +102,7 @@ func (runTimeData *RunTimeData) SuccessfulRemove(courseData CourseData) *discord
 	}
 }
 
-// /* CLEAR EMBEDS */
+/* CLEAR EMBEDS */
 func (runTimeData *RunTimeData) InvalidClear() *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title: "Invalid Request!",
@@ -131,7 +131,7 @@ func (runTimeData *RunTimeData) SuccessfulClear() *discordgo.MessageEmbed {
 	}
 }
 
-// /* CHECK EMBEDS */
+/* CHECK EMBEDS */
 func (runTimeData *RunTimeData) InvalidCheck() *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title: "Invalid Request!",
@@ -157,7 +157,7 @@ func (runTimeData *RunTimeData) SuccessfulCheck(text string) *discordgo.MessageE
 	}
 }
 
-// /* SEARCH EMBEDS */
+/* SEARCH EMBEDS */
 func (runTimeData *RunTimeData) InvalidSearch(index string) *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title: "Invalid Request!",
@@ -217,7 +217,7 @@ func (runTimeData *RunTimeData) SuccessfulSearch(course CourseData) *discordgo.M
 	}
 }
 
-// /* DEBUG EMBEDS */
+/* DEBUG EMBEDS */
 func (runTimeData *RunTimeData) HelpEmbed() *discordgo.MessageEmbed {
 	registered := runTimeData.GetRegisteredCommands()
 	return &discordgo.MessageEmbed{
@@ -282,7 +282,7 @@ func (runTimeData *RunTimeData) UptimeEmbed() *discordgo.MessageEmbed {
 	}
 }
 
-// /* SNIPE EMBEDS */
+/* SNIPE EMBEDS */
 func (runTimeData *RunTimeData) SnipeEmbed(course CourseData) *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title: fmt.Sprintf("%s (Section %s) has opened!", course.Title, course.Section),

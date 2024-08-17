@@ -98,7 +98,7 @@ func (runTimeData *RunTimeData) ClearCommandHandler(s *discordgo.Session, i *dis
 	} else {
 		memberID = i.Interaction.User.ID
 	}
-	snipes := runTimeData.CheckSnipe(memberID)
+	snipes := runTimeData.GetSnipes(memberID)
 	if len(snipes) == 0 {
 		embed = runTimeData.InvalidClear()
 	} else {
@@ -117,7 +117,7 @@ func (runTimeData *RunTimeData) CheckCommandHandler(s *discordgo.Session, i *dis
 	} else {
 		memberID = i.Interaction.User.ID
 	}
-	snipes := runTimeData.CheckSnipe(memberID)
+	snipes := runTimeData.GetSnipes(memberID)
 	if len(snipes) != 0 {
 		text := ""
 		for _, course := range snipes {
