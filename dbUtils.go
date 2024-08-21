@@ -12,9 +12,11 @@ func (runTimeData *RunTimeData) InitDb() {
 	snipeDb := "CREATE TABLE IF NOT EXISTS snipes (course_index TEXT, memberID TEXT, campus TEXT, season TEXT)"
 	stmt, _ := runTimeData.Db.Prepare(snipeDb)
 	stmt.Exec()
+
 	registeredDb := "CREATE TABLE IF NOT EXISTS commands (command_name TEXT, command_id TEXT)"
 	stmt, _ = runTimeData.Db.Prepare(registeredDb)
 	stmt.Exec()
+	
 	for _, campus := range runTimeData.Config.CurrentCampuses {
 		campusQuery := fmt.Sprintf(
 			"CREATE TABLE IF NOT EXISTS %s" + 

@@ -13,7 +13,7 @@ import (
 )
 
 var s *discordgo.Session
-var snipeTicker = time.NewTicker(175 * time.Millisecond)
+var snipeTicker = NewMultiTicker(time.Second, time.Millisecond * 500)
 var snipeClose = make(chan bool)
 var indexingTimer = cron.New()
 
