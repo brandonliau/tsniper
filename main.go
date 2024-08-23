@@ -37,6 +37,10 @@ func main() {
 	runTimeData.UpdateRegisteredCommands(registered)
 	fmt.Printf("SUCCESS @ %s : REGISTER ALL COMMANDS\n", time.Now().Format("2006-01-02 15:04:05.00000"))
 
+	// s.ChannelMessageSendEmbed("1170936365991608320", runTimeData.PrivacySettingsEmbed())
+	// s.ChannelMessageSendEmbed("1170936365991608320", runTimeData.GettingStartedEmbed())
+	// s.ChannelMessageSendEmbed("1170936365991608320", runTimeData.CampusSelectionEmbed())
+
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 	<-stop

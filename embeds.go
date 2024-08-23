@@ -265,7 +265,7 @@ func (runTimeData *RunTimeData) HelpEmbed() *discordgo.MessageEmbed {
 func (runTimeData *RunTimeData) UptimeEmbed() *discordgo.MessageEmbed {
 	diff := time.Now().Unix() - runTimeData.StartTime
 	return &discordgo.MessageEmbed{
-		Title: "SnipeR Uptime",
+		Title: "TSniper Uptime",
 		Description: fmt.Sprintf(
 			"Last restart: <t:%d:R>\n" +
             "Uptime: %d days, %d hours, %d min, %d sec",
@@ -311,8 +311,8 @@ func (runTimeData *RunTimeData) SnipeEmbed(course CourseData) *discordgo.Message
 			Text: time.Now().Format("01/02/2006 03:04:05 PM"),
 		},
 	}
-}
 
+}/* ONBOARDING EMBEDS */
 func (runTimeData *RunTimeData) JoinEmbed(user *discordgo.User) *discordgo.MessageEmbed {
 	guild, _ := s.State.Guild(runTimeData.Config.Guild)
 	return &discordgo.MessageEmbed{
@@ -326,4 +326,81 @@ func (runTimeData *RunTimeData) JoinEmbed(user *discordgo.User) *discordgo.Messa
 			Text: time.Now().Format("01/02/2006 03:04:05 PM"),
 		},
 	}
+}
+
+func (runTimeData *RunTimeData) PrivacySettingsEmbed() *discordgo.MessageEmbed {
+	return &discordgo.MessageEmbed{
+		Title: "Privacy Settings",
+		Fields: []*discordgo.MessageEmbedField{
+			{
+				Name: "Step 1",
+				Value: ">>> Enable `allow direct messages from server members` in your `Privacy & Safety` settings",
+				Inline: false,
+			},
+			{
+				Name: "Step 2",
+				Value: ">>> Enable `allow direct messages from server members` in this server's `Privacy Settings`",
+				Inline: false,
+			},
+		},
+		Color: colorMap["blue"],
+		Image: &discordgo.MessageEmbedImage{
+			URL: "https://i.imgur.com/B4kCDbw.png",
+		},
+		Thumbnail: &discordgo.MessageEmbedThumbnail{
+			URL: runTimeData.Config.Image,
+		},
+	}	
+}
+
+func (runTimeData *RunTimeData) GettingStartedEmbed() *discordgo.MessageEmbed {
+	return &discordgo.MessageEmbed{
+		Title: "Getting Started",
+		Description: "Commands can be excecuted anywhere in this server or in your direct messages. All responses from the bot are visible only to you and will eventually disappear. When a section in your snipe requests opens, tsniper will DM you and provide a link that autofills the course index in WebReg.",
+		Fields: []*discordgo.MessageEmbedField{
+			{
+				Name: "`/add {index}`",
+				Value: ">>> Adds the given index to your snipe requests.",
+				Inline: false,
+			},
+			{
+				Name: "`/remove {index}`",
+				Value: ">>> Remove the given index from your snipe requests.",
+				Inline: false,
+			},
+			{
+				Name: "`/clear`",
+				Value: ">>> Remove all indices from your snipe requests.",
+				Inline: false,
+			},
+			{
+				Name: "`/check`",
+				Value: ">>> View all active snipe requests.",
+				Inline: false,
+			},
+			{
+				Name: "`/search {index}`",
+				Value: ">>> View course information for given index.",
+				Inline: false,
+			},
+		},
+		Color: colorMap["blue"],
+		Image: &discordgo.MessageEmbedImage{
+			URL: "https://i.imgur.com/tCd1v6q.png",
+		},
+		Thumbnail: &discordgo.MessageEmbedThumbnail{
+			URL: runTimeData.Config.Image,
+		},
+	}
+}
+
+func (runTimeData *RunTimeData) CampusSelectionEmbed() *discordgo.MessageEmbed {
+	return &discordgo.MessageEmbed{
+		Title: "Campus Selection",
+		Description: "Set your default campus by reacting below:\n" +
+		":red_square: New Brunswick\n" + 
+		":orange_square: Camden\n" +
+		":blue_square: Newark",
+		Color: colorMap["blue"],
+	}	
 }
