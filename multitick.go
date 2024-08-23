@@ -6,13 +6,12 @@ import (
 )
 
 type Ticker struct {
-	mux   sync.Mutex // Protects chans slice
-	chans []chan time.Time
+	mux       sync.Mutex // Protects chans slice
+	chans     []chan time.Time
 	tickerMux sync.Mutex // Used to sync start/stop
 	ticker    *time.Ticker
 	stopCh    chan struct{}
 	stopped   bool
-	dropped   int
 }
 
 // NewTicker creates and starts a new Ticker, whose ticks are sent to
@@ -82,13 +81,6 @@ func (t *Ticker) Stop() {
 	t.stopped = true
 }
 
-// Dropped returns the number of dropped ticks.
-func (t *Ticker) Dropped() int {
-	t.mux.Lock()
-	defer t.mux.Unlock()
-	return t.dropped
-}
-
 // This could be inlined as an anonymous function, but I think it's easier to
 // read stacktraces with real function names in them.
 func (t *Ticker) tick() {
@@ -97,11 +89,7 @@ func (t *Ticker) tick() {
 		case tick := <-t.ticker.C:
 			t.mux.Lock()
 			for i := range t.chans {
-				select {
-				case t.chans[i] <- tick:
-				default:
-					t.dropped++
-				}
+				t.chans[i] <- tick
 			}
 			t.mux.Unlock()
 		case <-t.stopCh:
