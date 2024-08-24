@@ -137,7 +137,7 @@ func (runTimeData *RunTimeData) GetCampus(memberID string) string {
 	for _, roleId := range roles {
 		role, _ := s.State.Role(runTimeData.Config.Guild, roleId)
 		switch role.Name {
-		case "New-Brunswick":
+		case "New Brunswick":
 			return "NB"
 		case "Newark":
 			return "NK"
