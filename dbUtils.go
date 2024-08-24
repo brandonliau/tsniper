@@ -59,9 +59,7 @@ func (runTimeData *RunTimeData) GetSnipes(memberID string) [][]string {
 }
 
 func (runTimeData *RunTimeData) CheckCourseExist(index string, campus string, season string) bool {
-	query := fmt.Sprintf(
-		"SELECT 1 FROM %s WHERE course_index = ? AND season = ?",
-		campus)
+	query := fmt.Sprintf("SELECT 1 FROM %s WHERE course_index = ? AND season = ?", campus)
 	row := runTimeData.Db.QueryRow(query, index, season)
 	var exist int
 	err := row.Scan(&exist)

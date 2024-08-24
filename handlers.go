@@ -29,10 +29,10 @@ func (runTimeData *RunTimeData) InitHandlers() {
 func (runTimeData *RunTimeData) AddCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	var memberID, index string
 	var embed *discordgo.MessageEmbed
-	if i.Interaction.GuildID != "" {
-		memberID = i.Interaction.Member.User.ID
+	if i.Member != nil {
+		memberID = i.Member.User.ID
 	} else {
-		memberID = i.Interaction.User.ID
+		memberID = i.User.ID
 	}
 	campus := runTimeData.GetCampus(memberID)
 	season := runTimeData.Config.CurrentSeasons[0]
@@ -62,10 +62,10 @@ func (runTimeData *RunTimeData) AddCommandHandler(s *discordgo.Session, i *disco
 func (runTimeData *RunTimeData) RemoveCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	var memberID, index string
 	var embed *discordgo.MessageEmbed
-	if i.Interaction.GuildID != "" {
-		memberID = i.Interaction.Member.User.ID
+	if i.Member != nil {
+		memberID = i.Member.User.ID
 	} else {
-		memberID = i.Interaction.User.ID
+		memberID = i.User.ID
 	}
 	campus := runTimeData.GetCampus(memberID)
 	season := runTimeData.Config.CurrentSeasons[0]
@@ -93,10 +93,10 @@ func (runTimeData *RunTimeData) RemoveCommandHandler(s *discordgo.Session, i *di
 func (runTimeData *RunTimeData) ClearCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	var memberID string
 	var embed *discordgo.MessageEmbed
-	if i.Interaction.GuildID != "" {
-		memberID = i.Interaction.Member.User.ID
+	if i.Member != nil {
+		memberID = i.Member.User.ID
 	} else {
-		memberID = i.Interaction.User.ID
+		memberID = i.User.ID
 	}
 	snipes := runTimeData.GetSnipes(memberID)
 	if len(snipes) == 0 {
@@ -112,10 +112,10 @@ func (runTimeData *RunTimeData) ClearCommandHandler(s *discordgo.Session, i *dis
 func (runTimeData *RunTimeData) CheckCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	var memberID string
 	var embed *discordgo.MessageEmbed
-	if i.Interaction.GuildID != "" {
-		memberID = i.Interaction.Member.User.ID
+	if i.Member != nil {
+		memberID = i.Member.User.ID
 	} else {
-		memberID = i.Interaction.User.ID
+		memberID = i.User.ID
 	}
 	snipes := runTimeData.GetSnipes(memberID)
 	if len(snipes) != 0 {
@@ -158,10 +158,10 @@ func (runTimeData *RunTimeData) CheckCommandHandler(s *discordgo.Session, i *dis
 func (runTimeData *RunTimeData) SearchCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	var memberID, index string
 	var embed *discordgo.MessageEmbed
-	if i.Interaction.GuildID != "" {
-		memberID = i.Interaction.Member.User.ID
+	if i.Member != nil {
+		memberID = i.Member.User.ID
 	} else {
-		memberID = i.Interaction.User.ID
+		memberID = i.User.ID
 	}
 	campus := runTimeData.GetCampus(memberID)
 	season := runTimeData.Config.CurrentSeasons[0]

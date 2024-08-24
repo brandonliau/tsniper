@@ -2,18 +2,19 @@ package main
 
 import (
 	"database/sql"
+	"sync"
 )
 
 type RawCourseData struct {
-	Title              string `json:"title"`
-	CourseString       string `json:"courseString"`
+	Title        string `json:"title"`
+	CourseString string `json:"courseString"`
 	Sections     []struct {
-		Index				string `json:"index"`
-		Section				string `json:"number"`
-		Instructors 		string `json:"instructorsText"`
-		SectionNotes        string `json:"sectionNotes"`
-		OpenStatus			bool   `json:"openStatus"`
-		MeetingTimes    []struct {
+		Index        string `json:"index"`
+		Section      string `json:"number"`
+		Instructors  string `json:"instructorsText"`
+		SectionNotes string `json:"sectionNotes"`
+		OpenStatus   bool   `json:"openStatus"`
+		MeetingTimes []struct {
 			CampusLocation    string `json:"campusLocation"`
 			CampusName        string `json:"campusName"`
 			PmCode            string `json:"pmCode"`
@@ -27,34 +28,35 @@ type RawCourseData struct {
 }
 
 type CourseData struct {
-	Title        string   `json:"title"`
-	CourseString string   `json:"courseString"`
-	Index		 string   `json:"index"`
-	Section      string   `json:"section"`
-	Instructors  string   `json:"instructors"`
-	Notes        string   `json:"notes"`
+	Title        string `json:"title"`
+	CourseString string `json:"courseString"`
+	Index        string `json:"index"`
+	Section      string `json:"section"`
+	Instructors  string `json:"instructors"`
+	Notes        string `json:"notes"`
 	Meeting      string `json:"meeting"`
 }
 
 type Season struct {
-	Name   string	`yaml:"name"`
-	Term   string	`yaml:"term"`
-	Year   string	`yaml:"year"`
+	Name string `yaml:"name"`
+	Term string `yaml:"term"`
+	Year string `yaml:"year"`
 }
 
 type Config struct {
-	Token             string			`yaml:"token"`
-	Guild			  string 			`yaml:"guild"`
-	Boarding		  string			`yaml:"boarding"`
-	Image             string			`yaml:"image"`
-	CurrentCampuses   []string			`yaml:"current_campuses"`
-	CurrentSeasons    []string			`yaml:"current_seasons"`
-	Seasons			  map[string]Season `yaml:"seasons"`
+	Token           string            `yaml:"token"`
+	Guild           string            `yaml:"guild"`
+	Boarding        string            `yaml:"boarding"`
+	Image           string            `yaml:"image"`
+	CurrentCampuses []string          `yaml:"current_campuses"`
+	CurrentSeasons  []string          `yaml:"current_seasons"`
+	Seasons         map[string]Season `yaml:"seasons"`
 }
 
 type RunTimeData struct {
-	Config			 Config
-	Db				 *sql.DB
-	Tracking		 map[string]map[string]int
-	StartTime		 int64
+	mu        sync.RWMutex
+	Config    Config
+	Db        *sql.DB
+	Tracking  map[string]map[string]int
+	StartTime int64
 }

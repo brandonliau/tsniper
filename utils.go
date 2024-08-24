@@ -96,6 +96,8 @@ func (runTimeData *RunTimeData) SyncUsers() {
 }
 
 func (runTimeData *RunTimeData) UpdateTracking(action int, index string, campus string, season string) {
+	runTimeData.mu.Lock()
+	defer runTimeData.mu.Unlock()
 	switch action {
 	case 0: // sync
 		for _, campus := range runTimeData.Config.CurrentCampuses {
@@ -131,9 +133,17 @@ func (runTimeData *RunTimeData) SyncTracking() {
 	}
 }
 
-func (runTimeData *RunTimeData) GetCampus(memberID string) string {
+func (runTimeData *RunTimeData) GetCampus(memberID string) (campus string) {
+	defer func() {
+		if r := recover(); r != nil {
+			campus = "NB"
+			fmt.Printf("Recovered @ %s : %s | %s\n", time.Now().Format("2006-01-02 15:04:05.00000"), r, memberID)
+		}
+	}()
 	member, err := s.State.Member(runTimeData.Config.Guild, memberID)
-	fmt.Println(member, err)
+	if err != nil {
+		panic(err)
+	}
 	roles := member.Roles
 	for _, roleId := range roles {
 		role, _ := s.State.Role(runTimeData.Config.Guild, roleId)
