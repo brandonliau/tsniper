@@ -87,7 +87,7 @@ func (runTimeData *RunTimeData) SyncUsers() {
 	var memberID string
 	for rows.Next() {
 		rows.Scan(&memberID)
-		_, err := s.State.Member(runTimeData.Config.Guild, memberID)
+		_, err := s.GuildMember(runTimeData.Config.Guild, memberID)
 		if err != nil {
 			runTimeData.ClearSnipe(memberID)
 		}
@@ -140,7 +140,7 @@ func (runTimeData *RunTimeData) GetCampus(memberID string) (campus string) {
 			fmt.Printf("Recovered @ %s : %s | %s\n", time.Now().Format("2006-01-02 15:04:05.00000"), r, memberID)
 		}
 	}()
-	member, err := s.State.Member(runTimeData.Config.Guild, memberID)
+	member, err := s.GuildMember(runTimeData.Config.Guild, memberID)
 	if err != nil {
 		panic(err)
 	}
