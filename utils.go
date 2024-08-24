@@ -132,7 +132,8 @@ func (runTimeData *RunTimeData) SyncTracking() {
 }
 
 func (runTimeData *RunTimeData) GetCampus(memberID string) string {
-	member, _ := s.State.Member(runTimeData.Config.Guild, memberID)
+	member, err := s.State.Member(runTimeData.Config.Guild, memberID)
+	fmt.Println(member, err)
 	roles := member.Roles
 	for _, roleId := range roles {
 		role, _ := s.State.Role(runTimeData.Config.Guild, roleId)
