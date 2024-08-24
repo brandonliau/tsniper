@@ -88,9 +88,13 @@ func (runTimeData *RunTimeData) IndexCourses(campus string, season string) {
 
 func (runTimeData *RunTimeData) IndexSync() {
 	for _, campus := range runTimeData.Config.CurrentCampuses {
+		query := fmt.Sprintf("DELETE FROM %s WHERE season NOT IN (", campus)
 		for _, season := range runTimeData.Config.CurrentSeasons {
+			query += fmt.Sprintf("'%s',", season)
 			runTimeData.IndexCourses(campus, season)
 		}
+		query = query[:len(query)-1] + ")"
+		runTimeData.Db.Exec(query)
 	}
 	fmt.Printf("SUCCESS @ %s : INDEX COURSES\n", time.Now().Format("2006-01-02 15:04:05.00000"))
 }
