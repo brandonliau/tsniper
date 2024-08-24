@@ -85,8 +85,8 @@ func (runTimeData *RunTimeData) GetCourseData(index string, campus string, seaso
 }
 
 func (runTimeData *RunTimeData) GetSnipeCount(index string, campus string, season string) int {
-	query := fmt.Sprintf("SELECT count(*) FROM %s WHERE course_index = ? AND season = ?", campus)
-	row := runTimeData.Db.QueryRow(query, index, season)
+	query := "SELECT count(*) FROM snipes WHERE course_index = ? AND campus = ? AND season = ?"
+	row := runTimeData.Db.QueryRow(query, index, campus, season)
 	var count int
 	row.Scan(&count)
 	return count
