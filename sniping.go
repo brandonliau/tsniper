@@ -14,7 +14,9 @@ func (runTimeData *RunTimeData) GetOpenSections(openSections chan []string, camp
 		case <- c:
 			// fmt.Printf("START %s - %s @ %s\n", campus, season, time.Now().Format("2006-01-02 15:04:05.00000"))
 			openData := OpenSectionsAPI(campus, runTimeData.Config.Seasons[season], client)
+			runTimeData.mu.RLock()
 			trackingData := GetKeys(runTimeData.Tracking[campus + season])
+			runTimeData.mu.RUnlock()
 			openCourses := Intersection(openData, trackingData)
 			if len(openCourses) > 0 {
 				openCourses = append(openCourses, campus + season) // append [campus + season] for processing loop

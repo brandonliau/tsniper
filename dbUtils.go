@@ -10,22 +10,19 @@ import (
 )
 
 func (runTimeData *RunTimeData) InitDb() {
-	snipeDb := "CREATE TABLE IF NOT EXISTS snipes (course_index TEXT, memberID TEXT, campus TEXT, season TEXT)"
-	stmt, _ := runTimeData.Db.Prepare(snipeDb)
-	stmt.Exec()
+	snipesDb := "CREATE TABLE IF NOT EXISTS snipes (course_index TEXT, memberID TEXT, campus TEXT, season TEXT)"
+	runTimeData.Db.Exec(snipesDb)
 
 	registeredDb := "CREATE TABLE IF NOT EXISTS commands (command_name TEXT, command_id TEXT)"
-	stmt, _ = runTimeData.Db.Prepare(registeredDb)
-	stmt.Exec()
+	runTimeData.Db.Exec(registeredDb)
 	
 	for _, campus := range runTimeData.Config.CurrentCampuses {
-		campusQuery := fmt.Sprintf(
+		campusDb := fmt.Sprintf(
 			"CREATE TABLE IF NOT EXISTS %s" + 
 			"(course_index TEXT, title TEXT, course_string TEXT, section TEXT, instructors TEXT, notes TEXT, meeting TEXT, season TEXT, last_open BIGINT, " + 
 			"UNIQUE (course_index, season))",
 			campus)
-		stmt, _ := runTimeData.Db.Prepare(campusQuery)
-		stmt.Exec()
+		runTimeData.Db.Exec(campusDb)
 	}
 }
 
@@ -45,10 +42,11 @@ func (runTimeData *RunTimeData) ClearSnipe(memberID string) {
 }
 
 func (runTimeData *RunTimeData) GetSnipes(memberID string) [][]string {
+	var index, campus, season string
 	snipes := make([][]string, 0)
 	query := "SELECT course_index, campus, season FROM snipes WHERE memberID = ?"
 	rows, _ := runTimeData.Db.Query(query, memberID)
-	var index, campus, season string
+	defer rows.Close()
 	for rows.Next() {
 		rows.Scan(&index, &campus, &season)
 		snipes = append(snipes, []string{index, campus, season})
@@ -60,17 +58,17 @@ func (runTimeData *RunTimeData) GetSnipes(memberID string) [][]string {
 }
 
 func (runTimeData *RunTimeData) CheckCourseExist(index string, campus string, season string) bool {
+	var exist int
 	query := fmt.Sprintf("SELECT 1 FROM %s WHERE course_index = ? AND season = ?", campus)
 	row := runTimeData.Db.QueryRow(query, index, season)
-	var exist int
 	err := row.Scan(&exist)
 	return err == nil // return true if course exists in db
 }
 
 func (runTimeData *RunTimeData) GetCourseData(index string, campus string, season string) CourseData {
+	var course_index, title, courseString, section, instructors, notes, meeting string
 	query := fmt.Sprintf("SELECT course_index, title, course_string, section, instructors, notes, meeting FROM %s WHERE course_index = ? AND season = ?", campus)
 	row := runTimeData.Db.QueryRow(query, index, season)
-	var course_index, title, courseString, section, instructors, notes, meeting string
 	row.Scan(&course_index, &title, &courseString, &section, &instructors, &notes, &meeting)
 	return CourseData{
 		Title: title, 
@@ -84,27 +82,28 @@ func (runTimeData *RunTimeData) GetCourseData(index string, campus string, seaso
 }
 
 func (runTimeData *RunTimeData) GetSnipeCount(index string, campus string, season string) int {
+	var count int
 	query := "SELECT count(*) FROM snipes WHERE course_index = ? AND campus = ? AND season = ?"
 	row := runTimeData.Db.QueryRow(query, index, campus, season)
-	var count int
 	row.Scan(&count)
 	return count
 }
 
 func (runTimeData *RunTimeData) GetLastOpen(index string, campus string, season string) int64 {
-	query := fmt.Sprintf("SELECT last_open FROM %s WHERE course_index = ? AND season = ?", campus)
 	var lastOpen int64
+	query := fmt.Sprintf("SELECT last_open FROM %s WHERE course_index = ? AND season = ?", campus)
 	row := runTimeData.Db.QueryRow(query, index, season)
 	row.Scan(&lastOpen)
 	return lastOpen
 }
 
 func (runTimeData *RunTimeData) GetLastOpens(campus string, season string) map[string]int64 {
-	lastOpens := make(map[string]int64)
-	query := fmt.Sprintf("SELECT course_index, last_open FROM %s WHERE season = ?", campus)
 	var course_index string
 	var lastOpen int64
+	lastOpens := make(map[string]int64)
+	query := fmt.Sprintf("SELECT course_index, last_open FROM %s WHERE season = ?", campus)
 	rows, _ := runTimeData.Db.Query(query, season)
+	defer rows.Close()
 	for rows.Next() {
 		rows.Scan(&course_index, &lastOpen)
 		lastOpens[course_index] = lastOpen
@@ -118,13 +117,14 @@ func (runTimeData *RunTimeData) UpdateLastOpen(time int64, index string, campus 
 }
 
 func (runTimeData *RunTimeData) GetUsersFromIndex(index string, campus string, season string) []string {
+	var users []string
+	var memberID string
 	query := "SELECT memberID FROM snipes WHERE course_index = ? AND season = ?"
 	rows, err := runTimeData.Db.Query(query, index, season)
 	if err != nil {
 		fmt.Println(err, time.Now().Format("2006-01-02 15:04:05.00000"))
 	}
-	var users []string
-	var memberID string
+	defer rows.Close()
 	for rows.Next() {
 		rows.Scan(&memberID)
 		users = append(users, memberID)
@@ -145,9 +145,9 @@ func (runTimeData *RunTimeData) GetDistinctSnipes() *sql.Rows {
 }
 
 func (runTimeData *RunTimeData) AreadySniping(memberID string, index string, campus string, season string) bool {
+	var exist int
 	query := "SELECT 1 FROM snipes WHERE memberID = ? AND course_index = ? AND campus = ? AND season = ?"
 	row := runTimeData.Db.QueryRow(query, memberID, index, campus, season)
-	var exist int
 	err := row.Scan(&exist)
 	return err == nil // return true if snipe exists in db
 }
@@ -161,10 +161,11 @@ func (runTimeData *RunTimeData) UpdateRegisteredCommands(registered []*discordgo
 }
 
 func (runTimeData *RunTimeData) GetRegisteredCommands() map[string]string {
+	var name, id string
 	registered := make(map[string]string)
 	query := "SELECT command_name, command_id FROM commands"
 	rows, _ := runTimeData.Db.Query(query)
-	var name, id string
+	defer rows.Close()
 	for rows.Next() {
 		rows.Scan(&name, &id)
 		registered[name] = id
