@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"sort"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -118,7 +119,10 @@ func (runTimeData *RunTimeData) UpdateLastOpen(time int64, index string, campus 
 
 func (runTimeData *RunTimeData) GetUsersFromIndex(index string, campus string, season string) []string {
 	query := "SELECT memberID FROM snipes WHERE course_index = ? AND season = ?"
-	rows, _ := runTimeData.Db.Query(query, index, season)
+	rows, err := runTimeData.Db.Query(query, index, season)
+	if err != nil {
+		fmt.Println(err, time.Now().Format("2006-01-02 15:04:05.00000"))
+	}
 	var users []string
 	var memberID string
 	for rows.Next() {
