@@ -90,9 +90,7 @@ func (runTimeData *RunTimeData) SyncUsers() {
 	for rows.Next() {
 		rows.Scan(&memberID)
 		if _, err := s.State.Member(runTimeData.Config.Guild, memberID); err != nil {
-			if _, err = s.GuildMember(runTimeData.Config.Guild, memberID); err != nil {
-				runTimeData.ClearSnipe(memberID)
-			}
+			runTimeData.ClearSnipe(memberID)
 		}
 	}
 	fmt.Printf("SUCCESS @ %s : SYNC USERS\n", time.Now().Format("2006-01-02 15:04:05.00000"))
