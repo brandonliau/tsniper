@@ -153,6 +153,9 @@ func (runTimeData *RunTimeData) GetDistinctSnipes() map[string]map[string]int {
 	defer rows.Close()
 	for rows.Next() {
 		rows.Scan(&index, &campus, &season, &count);
+		if tracking[campus + season] == nil {
+			tracking[campus + season] = make(map[string]int)
+		}
 		tracking[campus + season][index] = count
 	}
 	return tracking
