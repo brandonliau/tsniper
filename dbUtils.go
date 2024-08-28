@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"sort"
 	"time"
@@ -132,16 +131,31 @@ func (runTimeData *RunTimeData) GetUsersFromIndex(index string, campus string, s
 	return users
 }
 
-func (runTimeData *RunTimeData) GetDistinctUsers() *sql.Rows {
+func (runTimeData *RunTimeData) GetDistinctUsers() []string {
+	var users []string
+	var memberID string
 	query := "SELECT DISTINCT memberID FROM snipes"
 	rows, _ := runTimeData.Db.Query(query)
-	return rows
+	defer rows.Close()
+	for rows.Next() {
+		rows.Scan(&memberID)
+		users = append(users, memberID)
+	}
+	return users
 }
 
-func (runTimeData *RunTimeData) GetDistinctSnipes() *sql.Rows {
+func (runTimeData *RunTimeData) GetDistinctSnipes() map[string]map[string]int {
+	var index, campus, season string
+	var count int
+	tracking := make(map[string]map[string]int)
 	query := "SELECT course_index, campus, season, COUNT(course_index) AS count FROM snipes GROUP BY course_index"
 	rows, _ := runTimeData.Db.Query(query)
-	return rows
+	defer rows.Close()
+	for rows.Next() {
+		rows.Scan(&index, &campus, &season, &count);
+		tracking[campus + season][index] = count
+	}
+	return tracking
 }
 
 func (runTimeData *RunTimeData) AreadySniping(memberID string, index string, campus string, season string) bool {

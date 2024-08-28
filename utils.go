@@ -73,7 +73,7 @@ func (runTimeData *RunTimeData) LoadConfig(filename string) {
 func (runTimeData *RunTimeData) InitRunTimeData() {
 	// open connection to db
 	db, _ := sql.Open("sqlite", "./database.db")
-	db.SetMaxOpenConns(1)
+	// db.SetMaxOpenConns(1)
 	runTimeData.Db = db
 	fmt.Printf("SUCCESS @ %s : CONNECTED TO DATABASE\n", time.Now().Format("2006-01-02 15:04:05.00000"))
 	// intialize database
@@ -85,10 +85,8 @@ func (runTimeData *RunTimeData) InitRunTimeData() {
 
 func (runTimeData *RunTimeData) SyncUsers() {
 	// clear snipes from users that left
-	rows := runTimeData.GetDistinctUsers()
-	var memberID string
-	for rows.Next() {
-		rows.Scan(&memberID)
+	users := runTimeData.GetDistinctUsers()
+	for _, memberID := range users {
 		if _, err := s.State.Member(runTimeData.Config.Guild, memberID); err != nil {
 			runTimeData.ClearSnipe(memberID)
 		}
@@ -106,13 +104,7 @@ func (runTimeData *RunTimeData) UpdateTracking(action int, index string, campus 
 				runTimeData.Tracking[campus + season] = make(map[string]int)
 			}
 		}
-		rows := runTimeData.GetDistinctSnipes()
-		var index, campus, season string
-		var count int
-		for rows.Next() {
-			rows.Scan(&index, &campus, &season, &count);
-			runTimeData.Tracking[campus + season][index] = count
-		}
+		runTimeData.Tracking = runTimeData.GetDistinctSnipes()
 	case 1: // add
 		runTimeData.Tracking[campus + season][index] += 1
 	case 2: // remove
