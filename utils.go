@@ -73,7 +73,7 @@ func (runTimeData *RunTimeData) LoadConfig(filename string) {
 func (runTimeData *RunTimeData) InitRunTimeData() {
 	// open connection to db
 	db, _ := sql.Open("sqlite", "./database.db")
-	// db.SetMaxOpenConns(1)
+	db.SetMaxOpenConns(1)
 	runTimeData.Db = db
 	fmt.Printf("SUCCESS @ %s : CONNECTED TO DATABASE\n", time.Now().Format("2006-01-02 15:04:05.00000"))
 	// intialize database
