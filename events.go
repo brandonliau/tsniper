@@ -9,7 +9,7 @@ import (
 
 func (runTimeData *RunTimeData) OnReady(s *discordgo.Session, r *discordgo.Ready) {
 	runTimeData.IndexSync()
-	runTimeData.SyncUsers()
+	// runTimeData.SyncUsers()
 	runTimeData.SyncTracking()
 	fmt.Printf("SUCCESS @ %s : SYNC TRACKING\n", time.Now().Format("2006-01-02 15:04:05.00000"))
 	runTimeData.StartTime = time.Now().Unix()
