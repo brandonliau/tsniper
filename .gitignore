@@ -1,4 +1,2 @@
 *.yml
-*.json
 *.db
-test.go
