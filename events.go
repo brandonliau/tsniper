@@ -8,6 +8,7 @@ import (
 )
 
 func (runTimeData *RunTimeData) OnReady(s *discordgo.Session, r *discordgo.Ready) {
+	runTimeData.ClearOffSeasonSnipes()
 	runTimeData.IndexSync()
 	// runTimeData.SyncUsers()
 	runTimeData.SyncTracking()

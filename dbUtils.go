@@ -189,3 +189,21 @@ func (runTimeData *RunTimeData) GetRegisteredCommands() map[string]string {
 	}
 	return registered
 }
+
+func (runTimeData *RunTimeData) ClearOffSeasonSnipes() {
+	numSeasons := "("
+	for i := range runTimeData.Config.CurrentSeasons {
+		if i < len(runTimeData.Config.CurrentSeasons) - 1 {
+			numSeasons += "?, "
+		} else {
+			numSeasons += "?"
+		}
+	}
+	numSeasons += ")"
+	query := "DELETE FROM snipes WHERE season NOT IN " + numSeasons
+	seasons := make([]any, len(runTimeData.Config.CurrentSeasons))
+	for i, season := range runTimeData.Config.CurrentSeasons {
+		seasons[i] = season
+	}
+	runTimeData.Db.Exec(query, seasons...)
+}
