@@ -85,9 +85,6 @@ func (c *checkCommand) SuccessfulCheck(text string) *discordgo.MessageEmbed {
 		Title:       "Active Requests",
 		Description: text,
 		Color:       shared.Blue,
-		Thumbnail: &discordgo.MessageEmbedThumbnail{
-			URL: c.config.Image,
-		},
 		Footer: &discordgo.MessageEmbedFooter{
 			Text: time.Now().Format("01/02/2006 03:04:05 PM"),
 		},
