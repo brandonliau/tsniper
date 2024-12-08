@@ -3,6 +3,7 @@ package repository
 import (
 	"fmt"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -92,6 +93,16 @@ func (repo *snipeRepo) Sync() {
 	}
 	repo.logger.Info("Synced %d users in %v", len(currentGuildMembers), time.Since(start))
 
+	// clean off-season snipes
+	placeholders := strings.Repeat("?,", len(repo.sCfg.Seasons))
+	placeholders = placeholders[:len(placeholders)-1]
+	query := fmt.Sprintf("DELETE FROM snipes WHERE SEASON NOT IN (%s)", placeholders)
+	params := make([]interface{}, len(repo.sCfg.Seasons))
+	for i, season := range repo.sCfg.Seasons {
+		params[i] = season
+	}
+	repo.db.Exec(query, params...)
+
 	// sync tracking
 	start = time.Now()
 	repo.mu.Lock()
@@ -109,7 +120,6 @@ func (repo *snipeRepo) Sync() {
 	var count int
 	for rows.Next() {
 		rows.Scan(&index, &campus, &season, &count)
-		repo.logger.Debug(index, campus, season, count)
 		repo.trackedCount[campus+season][index] = count
 		repo.trackedIndices[campus+season] = append(repo.trackedIndices[campus+season], index)
 		numSnipes += 1
