@@ -96,7 +96,7 @@ func (repo *snipeRepo) Sync() {
 	start = time.Now()
 	placeholders := strings.Repeat("?,", len(repo.sCfg.Seasons))
 	placeholders = placeholders[:len(placeholders)-1]
-	query := fmt.Sprintf("DELETE FROM snipes WHERE SEASON NOT IN (%s)", placeholders)
+	query := fmt.Sprintf("DELETE FROM snipes WHERE season NOT IN (%s)", placeholders)
 	params := make([]interface{}, len(repo.sCfg.Seasons))
 	for i, season := range repo.sCfg.Seasons {
 		params[i] = season
@@ -177,7 +177,7 @@ func (repo *snipeRepo) Snipes(userID string) [][]string {
 }
 
 func (repo *snipeRepo) IsSniping(userID, index, campus, season string) bool {
-	row, _ := repo.db.QueryRow("SELECT 1 FROM snipes WHERE user_id = ? AND course_index = ? AND CAMPUS = ? AND SEASON = ?", userID, index, campus, season)
+	row, _ := repo.db.QueryRow("SELECT 1 FROM snipes WHERE course_index = ? AND season = ? AND campus = ? AND user_id = ?", index, season, campus, userID)
 	var exist int
 	err := row.Scan(&exist)
 	return err == nil // return true if course exists in db
@@ -189,7 +189,7 @@ func (repo *snipeRepo) AddSnipe(userID, index, campus, season string) {
 }
 
 func (repo *snipeRepo) RemoveSnipe(userID, index, campus, season string) {
-	repo.db.Exec("DELETE FROM snipes WHERE user_id = ? AND course_index = ? AND campus = ? AND season = ?", userID, index, campus, season)
+	repo.db.Exec("DELETE FROM snipes WHERE course_index = ? AND season = ? AND campus = ? AND user_id = ?", index, season, campus, userID)
 }
 
 func (repo *snipeRepo) ClearSnipe(userID string) {
@@ -238,7 +238,7 @@ func (repo *snipeRepo) SnipeUsers(index, campus, season string) []string {
 }
 
 func (repo *snipeRepo) SnipeCount(index, campus, season string) int {
-	row, _ := repo.db.QueryRow("SELECT count(*) FROM snipes WHERE course_index = ? AND campus = ? AND season = ?", index, campus, season)
+	row, _ := repo.db.QueryRow("SELECT count(*) FROM snipes WHERE course_index = ? AND season = ? AND campus = ?", index, season, campus)
 	var count int
 	row.Scan(&count)
 	return count
