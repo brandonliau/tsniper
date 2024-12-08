@@ -1,11 +1,6 @@
-package main
+package shared
 
-import (
-	"database/sql"
-	"sync"
-)
-
-type RawCourseData struct {
+type Course struct {
 	Title        string `json:"title"`
 	CourseString string `json:"courseString"`
 	Sections     []struct {
@@ -27,7 +22,7 @@ type RawCourseData struct {
 	} `json:"sections"`
 }
 
-type CourseData struct {
+type CourseEntry struct {
 	Title        string `json:"title"`
 	CourseString string `json:"courseString"`
 	Index        string `json:"index"`
@@ -35,28 +30,4 @@ type CourseData struct {
 	Instructors  string `json:"instructors"`
 	Notes        string `json:"notes"`
 	Meeting      string `json:"meeting"`
-}
-
-type Season struct {
-	Name string `yaml:"name"`
-	Term string `yaml:"term"`
-	Year string `yaml:"year"`
-}
-
-type Config struct {
-	Token           string            `yaml:"token"`
-	Guild           string            `yaml:"guild"`
-	Boarding        string            `yaml:"boarding"`
-	Image           string            `yaml:"image"`
-	CurrentCampuses []string          `yaml:"current_campuses"`
-	CurrentSeasons  []string          `yaml:"current_seasons"`
-	Seasons         map[string]Season `yaml:"seasons"`
-}
-
-type RunTimeData struct {
-	mu        sync.RWMutex
-	Config    Config
-	Db        *sql.DB
-	Tracking  map[string]map[string]int
-	StartTime int64
 }

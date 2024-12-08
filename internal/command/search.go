@@ -1,0 +1,164 @@
+package command
+
+import (
+	"fmt"
+	"time"
+
+	"Tsniper/internal/repository"
+	"Tsniper/internal/shared"
+	"Tsniper/pkg/config"
+	"Tsniper/pkg/database"
+
+	"github.com/bwmarrin/discordgo"
+)
+
+type searchCommand struct {
+	dCfg *config.DiscordConfig
+	sCfg *config.SnipeConfig
+	repo repository.Repository
+	db   database.Database
+	auth bool
+}
+
+func NewSearchCommand(dCfg config.Config, sCfg config.Config, repo repository.Repository, db database.Database) *searchCommand {
+	return &searchCommand{
+		dCfg: dCfg.(*config.DiscordConfig),
+		sCfg: sCfg.(*config.SnipeConfig),
+		repo: repo,
+		db:   db,
+		auth: false,
+	}
+}
+
+func (c *searchCommand) Command() *discordgo.ApplicationCommand {
+	seasonChoices := make([]*discordgo.ApplicationCommandOptionChoice, 0)
+	for _, season := range c.sCfg.Seasons {
+		data := discordgo.ApplicationCommandOptionChoice{
+			Name:  season,
+			Value: season,
+		}
+		seasonChoices = append(seasonChoices, &data)
+	}
+
+	campusChoices := make([]*discordgo.ApplicationCommandOptionChoice, 0)
+	for _, campus := range c.sCfg.Campuses {
+		data := discordgo.ApplicationCommandOptionChoice{
+			Name:  CampusName[campus],
+			Value: campus,
+		}
+		campusChoices = append(campusChoices, &data)
+	}
+
+	return &discordgo.ApplicationCommand{
+		Name:        "search",
+		Description: "View course information for given index.",
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "index",
+				Description: "index",
+				Required:    true,
+				MaxLength:   5,
+			},
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "season",
+				Description: "season",
+				Required:    false,
+				Choices:     seasonChoices,
+			},
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "campus",
+				Description: "campus",
+				Required:    false,
+				Choices:     campusChoices,
+			},
+		},
+	}
+}
+
+func (c *searchCommand) Auth() bool {
+	return c.auth
+}
+
+func (c *searchCommand) Execute(args *shared.CmdArgs) (*discordgo.InteractionResponse, error) {
+	opts := ParseInteractionOptions(args.Interaction.ApplicationCommandData())
+	index := opts["index"]
+	var campus, season string
+	var ok bool
+	if campus, ok = opts["campus"]; !ok {
+		campus = c.repo.Campus(args.UserID)
+	}
+	if season, ok = opts["season"]; !ok {
+		season = c.sCfg.Seasons[0]
+	}
+
+	if !c.repo.Exists(index, campus, season) {
+		rsp := shared.EphemeralEmbedResponse(c.InvalidSearch(index))
+		return rsp, nil
+	}
+
+	course := c.repo.CourseEntry(index, campus, season)
+	rsp := shared.EphemeralEmbedResponse(c.SuccessfulSearch(course))
+	return rsp, nil
+}
+
+func (c *searchCommand) InvalidSearch(index string) *discordgo.MessageEmbed {
+	return &discordgo.MessageEmbed{
+		Title:       "Invalid Request!",
+		Description: fmt.Sprintf("`%s` does not exist.", index),
+		Color:       shared.Red,
+		Thumbnail: &discordgo.MessageEmbedThumbnail{
+			URL: c.dCfg.Image,
+		},
+		Footer: &discordgo.MessageEmbedFooter{
+			Text: time.Now().Format("01/02/2006 03:04:05 PM"),
+		},
+	}
+}
+
+func (c *searchCommand) SuccessfulSearch(course shared.CourseEntry) *discordgo.MessageEmbed {
+	return &discordgo.MessageEmbed{
+		Title: fmt.Sprintf("%s (`%s`)", course.Title, course.CourseString),
+		Color: shared.Blue,
+		Fields: []*discordgo.MessageEmbedField{
+			{
+				Name:   ":alarm_clock: Section Meeting Times",
+				Value:  fmt.Sprintf(">>> %s", course.Meeting),
+				Inline: false,
+			},
+			{
+				Name:   "Course Name",
+				Value:  fmt.Sprintf("`%s`", course.Title),
+				Inline: true,
+			},
+			{
+				Name:   "Index",
+				Value:  fmt.Sprintf("`%s`", course.Index),
+				Inline: true,
+			},
+			{
+				Name:   "Section",
+				Value:  fmt.Sprintf("`%s`", course.Section),
+				Inline: true,
+			},
+			{
+				Name:   "Instructors",
+				Value:  fmt.Sprintf("```fix\n%s```", course.Instructors),
+				Inline: false,
+			},
+			{
+				Name:   "Special Notes",
+				Value:  fmt.Sprintf("```fix\n%s```", course.Notes),
+				Inline: false,
+			},
+		},
+		Thumbnail: &discordgo.MessageEmbedThumbnail{
+			URL: c.dCfg.Image,
+		},
+		Footer: &discordgo.MessageEmbedFooter{
+			Text: time.Now().Format("01/02/2006 03:04:05 PM"),
+		},
+	}
+}
