@@ -87,6 +87,21 @@ func (db *SqliteDB) Exec(query string, args ...any) error {
 	return nil
 }
 
+func (db *SqliteDB) ExecWithResult(query string, args ...any) (int64, error) {
+	result, err := db.writeDB.Exec(query, args...)
+	if err != nil {
+		db.logger.Info("Query: %s", query)
+		db.logger.Error("Failed to execute query: %v", err)
+		return 0, err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		db.logger.Error("Failed to get number of rows affected")
+		return 0, err
+	}
+	return rowsAffected, nil
+}
+
 func (db *SqliteDB) Query(query string, args ...any) (*sql.Rows, error) {
 	rows, err := db.readDB.Query(query, args...)
 	if err != nil {

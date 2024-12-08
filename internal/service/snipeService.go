@@ -154,6 +154,8 @@ func (s *snipeService) snipeLoop() {
 				if err != nil {
 					s.logger.Error("Failed to message user %s: %v", userID, err)
 					continue
+				} else {
+					s.logger.Info("Notified user %s that %s is open", userID, index)
 				}
 				s.repo.RemoveSnipe(userID, index, campus, season)
 				s.repo.Remove(index, campus, season)

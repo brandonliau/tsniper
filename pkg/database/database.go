@@ -8,6 +8,7 @@ type Database interface {
 	Close() error
 	ExecSQLFile(file string) error
 	Exec(query string, args ...any) error
+	ExecWithResult(query string, args ...any) (int64, error)
 	Query(query string, args ...any) (*sql.Rows, error)
 	QueryRow(query string, args ...any) (*sql.Row, error)
 	PrepareExec(query string) (*sql.Stmt, error)

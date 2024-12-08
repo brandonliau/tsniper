@@ -71,7 +71,6 @@ func (repo *snipeRepo) Sync() {
 		rows.Scan(&userID)
 		dbUserList = append(dbUserList, userID)
 	}
-
 	var lastUserID string
 	currentGuildMembers := make([]string, 0)
 	guild, _ := repo.session.State.Guild(repo.dCfg.Guild)
@@ -94,6 +93,7 @@ func (repo *snipeRepo) Sync() {
 	repo.logger.Info("Synced %d users in %v", len(currentGuildMembers), time.Since(start))
 
 	// clean off-season snipes
+	start = time.Now()
 	placeholders := strings.Repeat("?,", len(repo.sCfg.Seasons))
 	placeholders = placeholders[:len(placeholders)-1]
 	query := fmt.Sprintf("DELETE FROM snipes WHERE SEASON NOT IN (%s)", placeholders)
@@ -101,7 +101,8 @@ func (repo *snipeRepo) Sync() {
 	for i, season := range repo.sCfg.Seasons {
 		params[i] = season
 	}
-	repo.db.Exec(query, params...)
+	rowsAffected, _ := repo.db.ExecWithResult(query, params...)
+	repo.logger.Info("Cleared %d off season in %v", rowsAffected, time.Since(start))
 
 	// sync tracking
 	start = time.Now()
