@@ -39,7 +39,7 @@ func (m *discordManager) GuildMemberRemoveHandler(s *discordgo.Session, g *disco
 }
 
 func (m *discordManager) joinEmbed(user *discordgo.User) *discordgo.MessageEmbed {
-	guild, _ := m.session.Guild(m.dCfg.Guild)
+	guild, _ := m.session.State.Guild(m.dCfg.Guild)
 	return &discordgo.MessageEmbed{
 		Title:       "Welcome to the TSniper server!",
 		Description: fmt.Sprintf("%s has joined the server!\n\nYou are user **#%d**!", user.Mention(), guild.MemberCount),
