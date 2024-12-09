@@ -14,22 +14,22 @@ import (
 
 type addCommand struct {
 	dCfg *config.DiscordConfig
-	sCfg *config.SnipeConfig
+	sCfg *config.ServiceConfig
 	repo repository.Repository
 	db   database.Database
 }
 
-func NewAddCommand(dCfg config.Config, sCfg config.Config, repo repository.Repository, db database.Database) *addCommand {
+func NewAddCommand(dCfg *config.DiscordConfig, sCfg *config.ServiceConfig, repo repository.Repository, db database.Database) *addCommand {
 	return &addCommand{
-		dCfg: dCfg.(*config.DiscordConfig),
-		sCfg: sCfg.(*config.SnipeConfig),
+		dCfg: dCfg,
+		sCfg: sCfg,
 		repo: repo,
 		db:   db,
 	}
 }
 
 func (c *addCommand) Command() *discordgo.ApplicationCommand {
-	seasonChoices := make([]*discordgo.ApplicationCommandOptionChoice, 0)
+	seasonChoices := make([]*discordgo.ApplicationCommandOptionChoice, 0, len(c.sCfg.Seasons))
 	for _, season := range c.sCfg.Seasons {
 		data := discordgo.ApplicationCommandOptionChoice{
 			Name:  season,
@@ -38,7 +38,7 @@ func (c *addCommand) Command() *discordgo.ApplicationCommand {
 		seasonChoices = append(seasonChoices, &data)
 	}
 
-	campusChoices := make([]*discordgo.ApplicationCommandOptionChoice, 0)
+	campusChoices := make([]*discordgo.ApplicationCommandOptionChoice, 0, len(c.sCfg.Campuses))
 	for _, campus := range c.sCfg.Campuses {
 		data := discordgo.ApplicationCommandOptionChoice{
 			Name:  CampusName[campus],
@@ -85,7 +85,7 @@ func (c *addCommand) Execute(args *shared.CmdArgs) (*discordgo.InteractionRespon
 		campus = c.repo.Campus(args.UserID)
 	}
 	if season, ok = opts["season"]; !ok {
-		season = c.sCfg.Seasons[0]
+		season = c.sCfg.DefaultSeason
 	}
 
 	if !c.repo.Exists(index, campus, season) {

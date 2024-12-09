@@ -24,7 +24,7 @@ func (m *discordManager) RateLimitHandler(s *discordgo.Session, r *discordgo.Rat
 
 func (m *discordManager) GuildMemberAddHandler(s *discordgo.Session, g *discordgo.GuildMemberAdd) {
 	embed := m.joinEmbed(g.Member.User)
-	m.notifier.SendComplexMessage(m.config.Boarding, notifier.MessageSend("", embed))
+	m.notifier.SendChannelMessage(m.dCfg.Boarding, notifier.MessageSend("", embed))
 	m.logger.Info("Guild member add event")
 }
 
@@ -39,7 +39,7 @@ func (m *discordManager) GuildMemberRemoveHandler(s *discordgo.Session, g *disco
 }
 
 func (m *discordManager) joinEmbed(user *discordgo.User) *discordgo.MessageEmbed {
-	guild, _ := m.session.Guild(m.config.Guild)
+	guild, _ := m.session.Guild(m.dCfg.Guild)
 	return &discordgo.MessageEmbed{
 		Title:       "Welcome to the TSniper server!",
 		Description: fmt.Sprintf("%s has joined the server!\n\nYou are user **#%d**!", user.Mention(), guild.MemberCount),

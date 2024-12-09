@@ -12,16 +12,14 @@ import (
 )
 
 type helpCommand struct {
-	config *config.DiscordConfig
-	repo   repository.Repository
-	auth   bool
+	dCfg *config.DiscordConfig
+	repo repository.Repository
 }
 
-func NewHelpCommand(cfg config.Config, repo repository.Repository) *helpCommand {
+func NewHelpCommand(dCfg *config.DiscordConfig, repo repository.Repository) *helpCommand {
 	return &helpCommand{
-		config: cfg.(*config.DiscordConfig),
-		repo:   repo,
-		auth:   false,
+		dCfg: dCfg,
+		repo: repo,
 	}
 }
 
@@ -30,10 +28,6 @@ func (c *helpCommand) Command() *discordgo.ApplicationCommand {
 		Name:        "help",
 		Description: "List all commands.",
 	}
-}
-
-func (c *helpCommand) Auth() bool {
-	return c.auth
 }
 
 func (c *helpCommand) Execute(args *shared.CmdArgs) (*discordgo.InteractionResponse, error) {
@@ -77,7 +71,7 @@ func (c *helpCommand) HelpEmbed() *discordgo.MessageEmbed {
 			},
 		},
 		Thumbnail: &discordgo.MessageEmbedThumbnail{
-			URL: c.config.Image,
+			URL: c.dCfg.Image,
 		},
 		Footer: &discordgo.MessageEmbedFooter{
 			Text: time.Now().Format("01/02/2006 03:04:05 PM"),

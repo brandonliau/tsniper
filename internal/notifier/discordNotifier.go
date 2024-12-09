@@ -22,7 +22,7 @@ func (n *discordNotifier) SendResponse(i *discordgo.InteractionCreate, ir *disco
 	return nil
 }
 
-func (n *discordNotifier) SendComplexMessage(channelID string, data *discordgo.MessageSend) error {
+func (n *discordNotifier) SendChannelMessage(channelID string, data *discordgo.MessageSend) error {
 	_, err := n.session.ChannelMessageSendComplex(
 		channelID,
 		data,

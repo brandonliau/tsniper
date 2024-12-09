@@ -14,24 +14,22 @@ import (
 
 type searchCommand struct {
 	dCfg *config.DiscordConfig
-	sCfg *config.SnipeConfig
+	sCfg *config.ServiceConfig
 	repo repository.Repository
 	db   database.Database
-	auth bool
 }
 
-func NewSearchCommand(dCfg config.Config, sCfg config.Config, repo repository.Repository, db database.Database) *searchCommand {
+func NewSearchCommand(dCfg *config.DiscordConfig, sCfg *config.ServiceConfig, repo repository.Repository, db database.Database) *searchCommand {
 	return &searchCommand{
-		dCfg: dCfg.(*config.DiscordConfig),
-		sCfg: sCfg.(*config.SnipeConfig),
+		dCfg: dCfg,
+		sCfg: sCfg,
 		repo: repo,
 		db:   db,
-		auth: false,
 	}
 }
 
 func (c *searchCommand) Command() *discordgo.ApplicationCommand {
-	seasonChoices := make([]*discordgo.ApplicationCommandOptionChoice, 0)
+	seasonChoices := make([]*discordgo.ApplicationCommandOptionChoice, 0, len(c.sCfg.Seasons))
 	for _, season := range c.sCfg.Seasons {
 		data := discordgo.ApplicationCommandOptionChoice{
 			Name:  season,
@@ -40,7 +38,7 @@ func (c *searchCommand) Command() *discordgo.ApplicationCommand {
 		seasonChoices = append(seasonChoices, &data)
 	}
 
-	campusChoices := make([]*discordgo.ApplicationCommandOptionChoice, 0)
+	campusChoices := make([]*discordgo.ApplicationCommandOptionChoice, 0, len(c.sCfg.Campuses))
 	for _, campus := range c.sCfg.Campuses {
 		data := discordgo.ApplicationCommandOptionChoice{
 			Name:  CampusName[campus],
@@ -78,10 +76,6 @@ func (c *searchCommand) Command() *discordgo.ApplicationCommand {
 	}
 }
 
-func (c *searchCommand) Auth() bool {
-	return c.auth
-}
-
 func (c *searchCommand) Execute(args *shared.CmdArgs) (*discordgo.InteractionResponse, error) {
 	opts := ParseInteractionOptions(args.Interaction.ApplicationCommandData())
 	index := opts["index"]
@@ -91,7 +85,7 @@ func (c *searchCommand) Execute(args *shared.CmdArgs) (*discordgo.InteractionRes
 		campus = c.repo.Campus(args.UserID)
 	}
 	if season, ok = opts["season"]; !ok {
-		season = c.sCfg.Seasons[0]
+		season = c.sCfg.DefaultSeason
 	}
 
 	if !c.repo.Exists(index, campus, season) {

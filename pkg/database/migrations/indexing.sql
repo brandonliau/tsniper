@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS NB (
+CREATE TABLE IF NOT EXISTS courses (
     course_index TEXT,
     title TEXT,
     course_string TEXT,
@@ -6,39 +6,12 @@ CREATE TABLE IF NOT EXISTS NB (
     instructors TEXT,
     notes TEXT,
     meeting TEXT,
+    campus TEXT,
     season TEXT,
     last_open REAL,
-    UNIQUE (course_index, season)
+    UNIQUE (course_index, campus, season)
 );
-CREATE INDEX IF NOT EXISTS idx_NB_courseindex ON NB(course_index);
-CREATE INDEX IF NOT EXISTS idx_NB_season ON NB(season);
 
-CREATE TABLE IF NOT EXISTS NK (
-    course_index TEXT,
-    title TEXT,
-    course_string TEXT,
-    section TEXT,
-    instructors TEXT,
-    notes TEXT,
-    meeting TEXT,
-    season TEXT,
-    last_open REAL,
-    UNIQUE (course_index, season)
-);
-CREATE INDEX IF NOT EXISTS idx_NK_courseindex ON NK(course_index);
-CREATE INDEX IF NOT EXISTS idx_NK_season ON NK(season);
-
-CREATE TABLE IF NOT EXISTS CM (
-    course_index TEXT,
-    title TEXT,
-    course_string TEXT,
-    section TEXT,
-    instructors TEXT,
-    notes TEXT,
-    meeting TEXT,
-    season TEXT,
-    last_open REAL,
-    UNIQUE (course_index, season)
-);
-CREATE INDEX IF NOT EXISTS idx_CM_courseindex ON CM(course_index);
-CREATE INDEX IF NOT EXISTS idx_CM_season ON CM(season);
+CREATE INDEX IF NOT EXISTS idx_courses_courseindex ON courses(course_index);
+CREATE INDEX IF NOT EXISTS idx_courses_season ON courses(season);
+CREATE INDEX IF NOT EXISTS idx_courses_campus_season ON courses(campus, season);

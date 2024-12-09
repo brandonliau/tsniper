@@ -18,7 +18,7 @@ import (
 )
 
 type snipeService struct {
-	sCfg     *config.SnipeConfig
+	sCfg     *config.ServiceConfig
 	dCfg     *config.DiscordConfig
 	session  *discordgo.Session
 	client   *http.Client
@@ -31,8 +31,8 @@ type snipeService struct {
 }
 
 func NewSnipeService(
-	sCfg config.Config,
-	dCfg config.Config,
+	sCfg *config.ServiceConfig,
+	dCfg *config.DiscordConfig,
 	session *discordgo.Session,
 	repo repository.Repository,
 	nofitifer notifier.Notifier,
@@ -49,8 +49,8 @@ func NewSnipeService(
 		Timeout:   10 * time.Second,
 	}
 	snipeService := &snipeService{
-		sCfg:     sCfg.(*config.SnipeConfig),
-		dCfg:     dCfg.(*config.DiscordConfig),
+		sCfg:     sCfg,
+		dCfg:     dCfg,
 		session:  session,
 		client:   client,
 		stop:     make(chan bool),
@@ -91,11 +91,11 @@ func (s *snipeService) Stop() error {
 
 func (s *snipeService) snipeCheck(openChan chan []string, season, year, term, campus string) {
 	c := s.ticker.Subscribe()
-	prevOpened := OpenSections(s.sCfg, s.client, year, term, campus)
+	prevOpened := OpenSections(s.client, year, term, campus)
 	for {
 		select {
 		case <-c:
-			openSections := OpenSections(s.sCfg, s.client, year, term, campus)
+			openSections := OpenSections(s.client, year, term, campus)
 			trackedIndices := s.repo.TrackedIndices(campus, season)
 			openCourses := shared.Intersection(openSections, trackedIndices)
 			if len(openCourses) > 0 {
@@ -150,7 +150,7 @@ func (s *snipeService) snipeLoop() {
 					s.logger.Warn("User %s hasn't enabled direct messages", userID)
 					continue
 				}
-				err = s.notifier.SendComplexMessage(dmChannel, notifier.MessageSend(user.Mention(), embed, registerButton, resnipeButton))
+				err = s.notifier.SendChannelMessage(dmChannel, notifier.MessageSend(user.Mention(), embed, registerButton, resnipeButton))
 				if err != nil {
 					s.logger.Error("Failed to message user %s: %v", userID, err)
 					continue

@@ -13,7 +13,7 @@ import (
 )
 
 type discordManager struct {
-	config     *config.DiscordConfig
+	dCfg       *config.DiscordConfig
 	session    *discordgo.Session
 	repo       repository.Repository
 	notifier   notifier.Notifier
@@ -22,9 +22,9 @@ type discordManager struct {
 	components map[string]component.Component
 }
 
-func NewDiscordManager(cfg config.Config, s *discordgo.Session, repo repository.Repository, logger logger.Logger, notifier notifier.Notifier) *discordManager {
+func NewDiscordManager(dCfg *config.DiscordConfig, s *discordgo.Session, repo repository.Repository, logger logger.Logger, notifier notifier.Notifier) *discordManager {
 	return &discordManager{
-		config:     cfg.(*config.DiscordConfig),
+		dCfg:       dCfg,
 		session:    s,
 		repo:       repo,
 		notifier:   notifier,

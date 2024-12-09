@@ -18,7 +18,7 @@ import (
 type snipeRepo struct {
 	mu             sync.RWMutex
 	dCfg           *config.DiscordConfig
-	sCfg           *config.SnipeConfig
+	sCfg           *config.ServiceConfig
 	session        *discordgo.Session
 	db             database.Database
 	logger         logger.Logger
@@ -33,7 +33,7 @@ func NewSnipeRepo(dCfg config.Config, sCfg config.Config, s *discordgo.Session, 
 	trackedIndices := make(map[string][]string)
 	snipeRepo := &snipeRepo{
 		dCfg:           dCfg.(*config.DiscordConfig),
-		sCfg:           sCfg.(*config.SnipeConfig),
+		sCfg:           sCfg.(*config.ServiceConfig),
 		session:        s,
 		db:             db,
 		logger:         logger,
@@ -198,12 +198,10 @@ func (repo *snipeRepo) ClearSnipe(userID string) {
 
 // db course management
 func (repo *snipeRepo) CourseEntry(index, campus, season string) shared.CourseEntry {
-	query := fmt.Sprintf(`
-		SELECT course_index, title, course_string, section, instructors, notes, meeting
-		FROM %s
-		WHERE course_index = ? AND season = ?
-	`, campus)
-	row, _ := repo.db.QueryRow(query, index, season)
+	query := `SELECT course_index, title, course_string, section, instructors, notes, meeting
+		FROM courses WHERE course_index = ? AND campus = ? AND season = ?`
+
+	row, _ := repo.db.QueryRow(query, index, campus, season)
 	var course_index, title, courseString, section, instructors, notes, meeting string
 	row.Scan(&course_index, &title, &courseString, &section, &instructors, &notes, &meeting)
 	return shared.CourseEntry{
@@ -218,8 +216,8 @@ func (repo *snipeRepo) CourseEntry(index, campus, season string) shared.CourseEn
 }
 
 func (repo *snipeRepo) Exists(index, campus, season string) bool {
-	query := fmt.Sprintf("SELECT 1 FROM %s WHERE course_index = ? AND season = ?", campus)
-	row, _ := repo.db.QueryRow(query, index, season)
+	query := "SELECT 1 FROM courses WHERE course_index = ? AND campus = ? AND season = ?"
+	row, _ := repo.db.QueryRow(query, index, campus, season)
 	var exist int
 	err := row.Scan(&exist)
 	return err == nil // return true if course exists in db
@@ -245,8 +243,8 @@ func (repo *snipeRepo) SnipeCount(index, campus, season string) int {
 }
 
 func (repo *snipeRepo) LastOpen(index, campus, season string) int {
-	query := fmt.Sprintf("SELECT last_open FROM %s WHERE course_index = ? AND season = ?", campus)
-	row, _ := repo.db.QueryRow(query, index, season)
+	query := "SELECT last_open FROM courses WHERE course_index = ? AND campus = ? AND season = ?"
+	row, _ := repo.db.QueryRow(query, index, campus, season)
 	var lastOpen int
 	row.Scan(&lastOpen)
 	return lastOpen
@@ -254,8 +252,8 @@ func (repo *snipeRepo) LastOpen(index, campus, season string) int {
 
 func (repo *snipeRepo) LastOpens(campus, season string) map[string]int64 {
 	lastOpens := make(map[string]int64)
-	query := fmt.Sprintf("SELECT course_index, last_open FROM %s WHERE season = ?", campus)
-	rows, _ := repo.db.Query(query, season)
+	query := "SELECT course_index, last_open FROM courses WHERE campus = ? AND season = ?"
+	rows, _ := repo.db.Query(query, campus, season)
 	defer rows.Close()
 	var index string
 	var lastOpen int64
@@ -267,19 +265,23 @@ func (repo *snipeRepo) LastOpens(campus, season string) map[string]int64 {
 }
 
 func (repo *snipeRepo) UpdateLastOpen(index, campus, season string, lastOpen int64) {
-	query := fmt.Sprintf("UPDATE %s SET last_open = ? WHERE course_index = ? AND season = ?", campus)
-	repo.db.Exec(query, lastOpen, index, season)
+	query := "UPDATE courses SET last_open = ? WHERE course_index = ? AND campus = ? AND season = ?"
+	repo.db.Exec(query, lastOpen, index, campus, season)
 }
 
 // discord user management
 func (repo *snipeRepo) Campus(userID string) string {
 	var member *discordgo.Member
 	var err error
-	if member, err = repo.session.State.Member(repo.dCfg.Guild, userID); err != nil {
-		member, _ = repo.session.GuildMember(repo.dCfg.Guild, userID)
+	member, err = repo.session.State.Member(repo.dCfg.Guild, userID)
+	if err != nil {
+		member, err = repo.session.GuildMember(repo.dCfg.Guild, userID)
+		if err != nil {
+			repo.logger.Error("Failed to get guild member %s: %v", userID, err)
+			return repo.sCfg.DefaultCampus
+		}
 	}
-	roles := member.Roles
-	for _, roleID := range roles {
+	for _, roleID := range member.Roles {
 		role, _ := repo.session.State.Role(repo.dCfg.Guild, roleID)
 		switch role.Name {
 		case "New Brunswick":
@@ -290,5 +292,5 @@ func (repo *snipeRepo) Campus(userID string) string {
 			return "CM"
 		}
 	}
-	return "NB"
+	return repo.sCfg.DefaultCampus
 }

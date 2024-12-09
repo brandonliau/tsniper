@@ -14,18 +14,16 @@ import (
 )
 
 type checkCommand struct {
-	config *config.DiscordConfig
-	repo   repository.Repository
-	db     database.Database
-	auth   bool
+	dCfg *config.DiscordConfig
+	repo repository.Repository
+	db   database.Database
 }
 
-func NewCheckCommand(cfg config.Config, repo repository.Repository, db database.Database) *checkCommand {
+func NewCheckCommand(dCfg *config.DiscordConfig, repo repository.Repository, db database.Database) *checkCommand {
 	return &checkCommand{
-		config: cfg.(*config.DiscordConfig),
-		repo:   repo,
-		db:     db,
-		auth:   false,
+		dCfg: dCfg,
+		repo: repo,
+		db:   db,
 	}
 }
 
@@ -34,10 +32,6 @@ func (c *checkCommand) Command() *discordgo.ApplicationCommand {
 		Name:        "check",
 		Description: "View all active snipe requests.",
 	}
-}
-
-func (c *checkCommand) Auth() bool {
-	return c.auth
 }
 
 func (c *checkCommand) Execute(args *shared.CmdArgs) (*discordgo.InteractionResponse, error) {
@@ -72,7 +66,7 @@ func (c *checkCommand) InvalidCheck() *discordgo.MessageEmbed {
 		Description: "You have no active snipe requests.",
 		Color:       shared.Red,
 		Thumbnail: &discordgo.MessageEmbedThumbnail{
-			URL: c.config.Image,
+			URL: c.dCfg.Image,
 		},
 		Footer: &discordgo.MessageEmbedFooter{
 			Text: time.Now().Format("01/02/2006 03:04:05 PM"),

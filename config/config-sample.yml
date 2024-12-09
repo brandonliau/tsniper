@@ -3,10 +3,10 @@ guild: # guild id
 boarding: # boarding channel id
 image: # bot logo
 campuses: # list of campuses
-  - foo
+  - foo # primary campus (default campus when option isn't provided)
   - bar
 seasons: # list of seasons
-  - baz # primary season (default when season is not provided in options)
+  - baz # primary season (default season when option isn't provided)
   - qux
 season_data: # season data
   baz:

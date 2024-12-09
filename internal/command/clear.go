@@ -12,18 +12,16 @@ import (
 )
 
 type clearCommand struct {
-	config *config.DiscordConfig
-	repo   repository.Repository
-	db     database.Database
-	auth   bool
+	dCfg *config.DiscordConfig
+	repo repository.Repository
+	db   database.Database
 }
 
-func NewClearCommand(cfg config.Config, repo repository.Repository, db database.Database) *clearCommand {
+func NewClearCommand(dCfg *config.DiscordConfig, repo repository.Repository, db database.Database) *clearCommand {
 	return &clearCommand{
-		config: cfg.(*config.DiscordConfig),
-		repo:   repo,
-		db:     db,
-		auth:   false,
+		dCfg: dCfg,
+		repo: repo,
+		db:   db,
 	}
 }
 
@@ -32,10 +30,6 @@ func (c *clearCommand) Command() *discordgo.ApplicationCommand {
 		Name:        "clear",
 		Description: "Remove all active snipe requests.",
 	}
-}
-
-func (c *clearCommand) Auth() bool {
-	return c.auth
 }
 
 func (c *clearCommand) Execute(args *shared.CmdArgs) (*discordgo.InteractionResponse, error) {
@@ -61,7 +55,7 @@ func (c *clearCommand) InvalidClear() *discordgo.MessageEmbed {
 		Description: "You have no active snipe requests.",
 		Color:       shared.Red,
 		Thumbnail: &discordgo.MessageEmbedThumbnail{
-			URL: c.config.Image,
+			URL: c.dCfg.Image,
 		},
 		Footer: &discordgo.MessageEmbedFooter{
 			Text: time.Now().Format("01/02/2006 03:04:05 PM"),
@@ -75,7 +69,7 @@ func (c *clearCommand) SuccessfulClear() *discordgo.MessageEmbed {
 		Description: "All active snipes requests have been removed.",
 		Color:       shared.Green,
 		Thumbnail: &discordgo.MessageEmbedThumbnail{
-			URL: c.config.Image,
+			URL: c.dCfg.Image,
 		},
 		Footer: &discordgo.MessageEmbedFooter{
 			Text: time.Now().Format("01/02/2006 03:04:05 PM"),

@@ -25,7 +25,7 @@ func main() {
 	// Create logger, config, and database
 	logger := logger.NewStdLogger(logger.LevelDebug)
 	dCfg := config.NewDiscordConfig("./config/config.yml", logger)
-	sCfg := config.NewSnipeConfig("./config/config.yml", logger)
+	sCfg := config.NewServiceConfig("./config/config.yml", logger)
 	db := database.NewSqliteDB("./database.db", logger)
 	defer db.Close()
 

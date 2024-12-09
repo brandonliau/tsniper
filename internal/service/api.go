@@ -8,7 +8,6 @@ import (
 	"net/url"
 
 	"Tsniper/internal/shared"
-	"Tsniper/pkg/config"
 )
 
 func fetchData(client *http.Client, baseURL string, params url.Values, result any) error {
@@ -29,7 +28,7 @@ func fetchData(client *http.Client, baseURL string, params url.Values, result an
 	return nil
 }
 
-func Courses(config *config.SnipeConfig, client *http.Client, year, term, campus string) ([]shared.Course, error) {
+func Courses(client *http.Client, year, term, campus string) ([]shared.Course, error) {
 	baseURL := "https://sis.rutgers.edu/soc/api/courses.json"
 	params := url.Values{}
 	params.Add("year", year)
@@ -43,7 +42,7 @@ func Courses(config *config.SnipeConfig, client *http.Client, year, term, campus
 	return courses, nil
 }
 
-func OpenSections(config *config.SnipeConfig, client *http.Client, year, term, campus string) []string {
+func OpenSections(client *http.Client, year, term, campus string) []string {
 	baseURL := "https://sis.rutgers.edu/soc/api/openSections.json"
 	params := url.Values{}
 	params.Add("year", year)

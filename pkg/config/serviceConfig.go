@@ -14,15 +14,17 @@ type Season struct {
 	Year string `yaml:"year"`
 }
 
-type SnipeConfig struct {
-	Campuses   []string          `yaml:"campuses"`
-	Seasons    []string          `yaml:"seasons"`
-	SeasonData map[string]Season `yaml:"season_data"`
-	logger     logger.Logger
+type ServiceConfig struct {
+	Campuses      []string          `yaml:"campuses"`
+	Seasons       []string          `yaml:"seasons"`
+	SeasonData    map[string]Season `yaml:"season_data"`
+	DefaultCampus string
+	DefaultSeason string
+	logger        logger.Logger
 }
 
-func NewSnipeConfig(file string, logger logger.Logger) *SnipeConfig {
-	cfg := &SnipeConfig{
+func NewServiceConfig(file string, logger logger.Logger) *ServiceConfig {
+	cfg := &ServiceConfig{
 		logger: logger,
 	}
 	err := cfg.load(file)
@@ -33,10 +35,12 @@ func NewSnipeConfig(file string, logger logger.Logger) *SnipeConfig {
 	if err != nil {
 		logger.Fatal("Failed to validate config file: %v", err)
 	}
+	cfg.DefaultCampus = cfg.Campuses[0]
+	cfg.DefaultCampus = cfg.Seasons[0]
 	return cfg
 }
 
-func (c *SnipeConfig) load(file string) error {
+func (c *ServiceConfig) load(file string) error {
 	yamlFile, err := os.ReadFile(file)
 	if err != nil {
 		return fmt.Errorf("readfile: %v", err)
@@ -48,14 +52,14 @@ func (c *SnipeConfig) load(file string) error {
 	return nil
 }
 
-func (c *SnipeConfig) validate() error {
-	if c.Campuses == nil {
+func (c *ServiceConfig) validate() error {
+	if len(c.Campuses) == 0 {
 		return fmt.Errorf("empty campuses")
 	}
-	if c.Seasons == nil {
+	if len(c.Seasons) == 0 {
 		return fmt.Errorf("empty seasons")
 	}
-	if c.SeasonData == nil {
+	if len(c.SeasonData) == 0 {
 		return fmt.Errorf("empty season data")
 	}
 	return nil

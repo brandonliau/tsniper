@@ -8,14 +8,10 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-type pingCommand struct {
-	auth bool
-}
+type pingCommand struct{}
 
 func NewPingCommand() *pingCommand {
-	return &pingCommand{
-		auth: false,
-	}
+	return &pingCommand{}
 }
 
 func (c *pingCommand) Command() *discordgo.ApplicationCommand {
@@ -23,10 +19,6 @@ func (c *pingCommand) Command() *discordgo.ApplicationCommand {
 		Name:        "ping",
 		Description: "Check bot latency.",
 	}
-}
-
-func (c *pingCommand) Auth() bool {
-	return c.auth
 }
 
 func (c *pingCommand) Execute(args *shared.CmdArgs) (*discordgo.InteractionResponse, error) {

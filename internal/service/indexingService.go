@@ -35,7 +35,7 @@ var campusMap = map[string]string{
 }
 
 type indexingService struct {
-	config *config.SnipeConfig
+	config *config.ServiceConfig
 	client *http.Client
 	cron   *cron.Cron
 	repo   repository.Repository
@@ -54,7 +54,7 @@ func NewIndexingService(cfg config.Config, repo repository.Repository, db databa
 		Timeout:   15 * time.Second,
 	}
 	indexingService := &indexingService{
-		config: cfg.(*config.SnipeConfig),
+		config: cfg.(*config.ServiceConfig),
 		client: client,
 		cron:   cron.New(),
 		repo:   repo,
@@ -110,16 +110,20 @@ func parseTime(time string) string {
 	return timeString
 }
 
-func (s *indexingService) indexCourses(season, year, term, campus string) {
+func (s *indexingService) indexCourses(campus, season, year, term string) {
 	start := time.Now()
-	courses, err := Courses(s.config, s.client, year, term, campus)
+	courses, err := Courses(s.client, year, term, campus)
 	if err != nil {
 		s.logger.Fatal("Failed to index courses: %v", err)
 	}
 
-	query := fmt.Sprintf(`INSERT OR REPLACE INTO %s (course_index, title, course_string, section, instructors, notes, meeting, season, last_open) 
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, campus)
-	stmt, _ := s.db.PrepareExec(query)
+	query := `INSERT OR REPLACE INTO courses 
+		(course_index, title, course_string, section, instructors, notes, meeting, campus, season, last_open) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	stmt, err := s.db.PrepareExec(query)
+	if err != nil {
+		s.logger.Fatal("Failed to prepare indexing query: %v", err)
+	}
 
 	lastOpens := s.repo.LastOpens(campus, season)
 	for _, course := range courses {
@@ -167,8 +171,8 @@ func (s *indexingService) indexCourses(season, year, term, campus string) {
 					builder.WriteString("Hours by arrangement\n")
 				}
 			}
-			meetingData := builder.String()
-			stmt.Exec(section.Index, title, courseString, section.Section, instructors, notes, meetingData[:len(meetingData)-1], season, lastOpen)
+			meetingData := builder.String()[:len(builder.String())-1]
+			stmt.Exec(section.Index, title, courseString, section.Section, instructors, notes, meetingData, campus, season, lastOpen)
 		}
 	}
 	s.logger.Info("Indexed %d courses in %v", len(courses), time.Since(start))
@@ -181,7 +185,7 @@ func (s *indexingService) indexCoursesLoop() {
 		for _, season := range s.config.Seasons {
 			year := s.config.SeasonData[season].Year
 			term := s.config.SeasonData[season].Term
-			s.indexCourses(season, year, term, campus)
+			s.indexCourses(campus, season, year, term)
 		}
 	}
 	s.db.Commit()
