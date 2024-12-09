@@ -36,7 +36,7 @@ func NewServiceConfig(file string, logger logger.Logger) *ServiceConfig {
 		logger.Fatal("Failed to validate config file: %v", err)
 	}
 	cfg.DefaultCampus = cfg.Campuses[0]
-	cfg.DefaultCampus = cfg.Seasons[0]
+	cfg.DefaultSeason = cfg.Seasons[0]
 	return cfg
 }
 
