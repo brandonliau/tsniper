@@ -147,12 +147,12 @@ func (s *snipeService) snipeLoop() {
 				user, _ := s.session.User(userID)
 				dmChannel, err := s.notifier.CreateDMChannel(userID)
 				if err != nil {
-					s.logger.Warn("User %s hasn't enabled direct messages", userID)
+					s.logger.Warn("Failed to create dm channel with user %s", userID)
 					continue
 				}
 				err = s.notifier.SendChannelMessage(dmChannel, notifier.MessageSend(user.Mention(), embed, registerButton, resnipeButton))
 				if err != nil {
-					s.logger.Error("Failed to message user %s: %v", userID, err)
+					s.logger.Warn("Failed to message user %s: %v", userID, err)
 					continue
 				} else {
 					s.logger.Info("Notified user %s that %s is open", userID, index)
