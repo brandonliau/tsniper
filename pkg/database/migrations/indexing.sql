@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS courses (
     meeting TEXT,
     campus TEXT,
     season TEXT,
-    last_open REAL,
+    last_open BIGINT,
     UNIQUE (course_index, campus, season)
 );
 
