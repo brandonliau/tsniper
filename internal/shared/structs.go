@@ -8,7 +8,7 @@ type Course struct {
 		Section      string `json:"number"`
 		Instructors  string `json:"instructorsText"`
 		SectionNotes string `json:"sectionNotes"`
-		OpenStatus   bool   `json:"openStatus"`
+		OpenStatus   string   `json:"openStatus"`
 		MeetingTimes []struct {
 			CampusLocation    string `json:"campusLocation"`
 			CampusName        string `json:"campusName"`

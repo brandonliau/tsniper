@@ -140,9 +140,9 @@ func (s *indexingService) indexCourses(campus, season, year, term string) {
 			if len(notes) == 0 {
 				notes = "No notes for this section"
 			}
-			if section.OpenStatus {
+			if section.OpenStatus == "OPEN" {
 				lastOpen = 0
-			} else if !section.OpenStatus && lastOpen == 0 {
+			} else if section.OpenStatus == "CLOSED" && lastOpen == 0 {
 				lastOpen = -1
 			}
 			for _, meeting := range section.MeetingTimes {
