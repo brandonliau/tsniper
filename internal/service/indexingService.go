@@ -140,9 +140,9 @@ func (s *indexingService) indexCourses(campus, season, year, term string) {
 			if len(notes) == 0 {
 				notes = "No notes for this section"
 			}
-			if section.OpenStatus == "OPEN" {
+			if section.OpenStatus {
 				lastOpen = 0
-			} else if section.OpenStatus == "CLOSED" && lastOpen == 0 {
+			} else if !section.OpenStatus && lastOpen == 0 {
 				lastOpen = -1
 			}
 			for _, meeting := range section.MeetingTimes {
@@ -173,6 +173,7 @@ func (s *indexingService) indexCourses(campus, season, year, term string) {
 			}
 			meetingData := builder.String()[:len(builder.String())-1]
 			stmt.Exec(section.Index, title, courseString, section.Section, instructors, notes, meetingData, campus, season, lastOpen)
+			s.logger.Debug("%v, %v, %v, %v", section.Index, campus, season, lastOpen)
 		}
 	}
 	s.logger.Info("Indexed %d courses in %v", len(courses), time.Since(start))
