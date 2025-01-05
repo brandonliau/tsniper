@@ -61,6 +61,11 @@ func (c *resnipeButton) Execute(args *shared.CmdArgs) (*discordgo.InteractionRes
 	index := resnipeURL.Query().Get("indexList")
 	campus := resnipeURL.Query().Get("campus")
 	season := c.getSeason(resnipeURL.Query().Get("semesterSelection"))
+	
+	// debugging
+	if campus == "" || season == "" {
+		fmt.Printf("resnipeURL: %s, campus: %s, season: %s\n", resnipeURL, campus, season)
+	}
 
 	if c.repo.IsSniping(args.UserID, index, campus, season) {
 		rsp := shared.EphemeralContentResponse(fmt.Sprintf("You are already sniping `%s`.", index))
