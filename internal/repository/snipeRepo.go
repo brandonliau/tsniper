@@ -135,9 +135,13 @@ func (repo *snipeRepo) Add(index, campus, season string) {
 	defer repo.mu.Unlock()
 	if _, ok := repo.trackedCount[campus+season]; !ok {
 		repo.logger.Warn("Assignment into nil map: %s, %s", campus, season)
+		repo.logger.Info("trackedCount dump: %v", repo.trackedCount)
+		repo.logger.Info("trackedIndices dump: %v", repo.trackedIndices)
 	}
 	if _, ok := repo.trackedCount[campus+season][index]; !ok {
 		repo.logger.Warn("Assignment into nil map: index %s", index)
+		repo.logger.Info("trackedCount dump: %v", repo.trackedCount)
+		repo.logger.Info("trackedIndices dump: %v", repo.trackedIndices)
 	}
 	repo.trackedCount[campus+season][index] += 1
 	if repo.trackedCount[campus+season][index] == 1 {
