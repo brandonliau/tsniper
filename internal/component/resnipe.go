@@ -3,7 +3,6 @@ package component
 import (
 	"fmt"
 	"net/url"
-	"time"
 
 	"Tsniper/internal/repository"
 	"Tsniper/internal/shared"
@@ -61,10 +60,11 @@ func (c *resnipeButton) Execute(args *shared.CmdArgs) (*discordgo.InteractionRes
 	index := resnipeURL.Query().Get("indexList")
 	campus := resnipeURL.Query().Get("campus")
 	season := c.getSeason(resnipeURL.Query().Get("semesterSelection"))
-	
-	// debugging
-	if campus == "" || season == "" {
-		fmt.Printf("resnipeURL: %s, campus: %s, season: %s\n", resnipeURL, campus, season)
+
+	_, ok := c.sCfg.ValidSeasons[season]
+	if !ok {
+		rsp := shared.EphemeralContentResponse("Cannot re-add snipe from inactive season.")
+		return rsp, nil
 	}
 
 	if c.repo.IsSniping(args.UserID, index, campus, season) {
@@ -75,26 +75,6 @@ func (c *resnipeButton) Execute(args *shared.CmdArgs) (*discordgo.InteractionRes
 	c.repo.AddSnipe(args.UserID, index, campus, season)
 	c.repo.Add(index, campus, season)
 
-	course := c.repo.CourseEntry(index, campus, season)
-	rsp := shared.EphemeralEmbedResponse(c.SuccessfullReAdd(course))
+	rsp := shared.EphemeralContentResponse(fmt.Sprintf("Successfully re-added `%s` to your snipe requests.", index))
 	return rsp, nil
-}
-
-func (c *resnipeButton) SuccessfullReAdd(course shared.CourseEntry) *discordgo.MessageEmbed {
-	return &discordgo.MessageEmbed{
-		Title: "Successfully Added Request!",
-		Description: fmt.Sprintf(
-			"`%s` - %s (**Section %s**) was added to your snipe requests.",
-			course.Index,
-			course.Title,
-			course.Section,
-		),
-		Color: shared.Green,
-		Thumbnail: &discordgo.MessageEmbedThumbnail{
-			URL: c.dCfg.Image,
-		},
-		Footer: &discordgo.MessageEmbedFooter{
-			Text: time.Now().Format("01/02/2006 03:04:05 PM"),
-		},
-	}
 }

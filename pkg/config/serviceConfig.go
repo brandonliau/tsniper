@@ -15,8 +15,9 @@ type Season struct {
 }
 
 type ServiceConfig struct {
-	Campuses      []string          `yaml:"campuses"`
-	Seasons       []string          `yaml:"seasons"`
+	Campuses      []string `yaml:"campuses"`
+	Seasons       []string `yaml:"seasons"`
+	ValidSeasons  map[string]struct{}
 	SeasonData    map[string]Season `yaml:"season_data"`
 	DefaultCampus string
 	DefaultSeason string
@@ -37,6 +38,10 @@ func NewServiceConfig(file string, logger logger.Logger) *ServiceConfig {
 	}
 	cfg.DefaultCampus = cfg.Campuses[0]
 	cfg.DefaultSeason = cfg.Seasons[0]
+	cfg.ValidSeasons = make(map[string]struct{})
+	for _, season := range cfg.Seasons {
+		cfg.ValidSeasons[season] = struct{}{}
+	}
 	return cfg
 }
 

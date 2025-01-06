@@ -131,13 +131,14 @@ func (repo *snipeRepo) Sync() {
 }
 
 func (repo *snipeRepo) Add(index, campus, season string) {
+	// debugging
 	defer func() {
-        if r := recover(); r != nil {
+		if r := recover(); r != nil {
 			repo.logger.Error("Assignment into nil map: %s, %s, %s", campus, season, index)
 			repo.logger.Info("trackedCount dump: %v", repo.trackedCount)
 			repo.logger.Info("trackedIndices dump: %v", repo.trackedIndices)
-        }
-    }()
+		}
+	}()
 	repo.mu.Lock()
 	defer repo.mu.Unlock()
 	repo.trackedCount[campus+season][index] += 1
