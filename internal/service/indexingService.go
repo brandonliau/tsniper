@@ -43,7 +43,7 @@ type indexingService struct {
 	logger logger.Logger
 }
 
-func NewIndexingService(cfg config.Config, repo repository.Repository, db database.Database, logger logger.Logger) *indexingService {
+func NewIndexingService(cfg *config.ServiceConfig, repo repository.Repository, db database.Database, logger logger.Logger) *indexingService {
 	transport := &http.Transport{
 		MaxIdleConns:        6,
 		MaxIdleConnsPerHost: 6,
@@ -54,7 +54,7 @@ func NewIndexingService(cfg config.Config, repo repository.Repository, db databa
 		Timeout:   15 * time.Second,
 	}
 	indexingService := &indexingService{
-		config: cfg.(*config.ServiceConfig),
+		config: cfg,
 		client: client,
 		cron:   cron.New(),
 		repo:   repo,

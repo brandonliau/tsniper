@@ -27,13 +27,13 @@ type snipeRepo struct {
 	trackedIndices map[string][]string
 }
 
-func NewSnipeRepo(dCfg config.Config, sCfg config.Config, s *discordgo.Session, db database.Database, logger logger.Logger) *snipeRepo {
+func NewSnipeRepo(dCfg *config.DiscordConfig, sCfg *config.ServiceConfig, s *discordgo.Session, db database.Database, logger logger.Logger) *snipeRepo {
 	registered := make(map[string]string)
 	trackedCount := make(map[string]map[string]int)
 	trackedIndices := make(map[string][]string)
 	snipeRepo := &snipeRepo{
-		dCfg:           dCfg.(*config.DiscordConfig),
-		sCfg:           sCfg.(*config.ServiceConfig),
+		dCfg:           dCfg,
+		sCfg:           sCfg,
 		session:        s,
 		db:             db,
 		logger:         logger,
