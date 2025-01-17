@@ -11,6 +11,7 @@ import (
 )
 
 func (m *discordManager) ReadyHandler(s *discordgo.Session, r *discordgo.Ready) {
+	s.UpdateCustomStatus("👁️‍🗨️ Monitoring...")
 	m.logger.Info("Ready event")
 }
 
