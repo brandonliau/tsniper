@@ -16,29 +16,29 @@ import (
 )
 
 type snipeRepo struct {
-	mu             sync.RWMutex
-	dCfg           *config.DiscordConfig
-	sCfg           *config.ServiceConfig
-	session        *discordgo.Session
-	db             database.Database
-	logger         logger.Logger
+	mu                   sync.RWMutex
+	dCfg                 *config.DiscordConfig
+	sCfg                 *config.ServiceConfig
+	session              *discordgo.Session
+	db                   database.Database
+	logger               logger.Logger
 	registeredCommands   map[string]string
 	registeredComponents map[string]discordgo.MessageComponent
-	trackedCount   map[string]map[string]int
-	trackedIndices map[string][]string
+	trackedCount         map[string]map[string]int
+	trackedIndices       map[string][]string
 }
 
 func NewSnipeRepo(dCfg *config.DiscordConfig, sCfg *config.ServiceConfig, s *discordgo.Session, db database.Database, logger logger.Logger) *snipeRepo {
 	snipeRepo := &snipeRepo{
-		dCfg:           dCfg,
-		sCfg:           sCfg,
-		session:        s,
-		db:             db,
-		logger:         logger,
+		dCfg:                 dCfg,
+		sCfg:                 sCfg,
+		session:              s,
+		db:                   db,
+		logger:               logger,
 		registeredCommands:   make(map[string]string),
 		registeredComponents: make(map[string]discordgo.MessageComponent),
-		trackedCount:   make(map[string]map[string]int),
-		trackedIndices: make(map[string][]string),
+		trackedCount:         make(map[string]map[string]int),
+		trackedIndices:       make(map[string][]string),
 	}
 	return snipeRepo
 }

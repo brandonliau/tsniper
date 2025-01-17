@@ -13,7 +13,7 @@ import (
 )
 
 type mockManager struct {
-	dCfg            *config.DiscordConfig
+	dCfg              *config.DiscordConfig
 	session           *discordgo.Session
 	application       *discordgo.Application
 	retrievedCommands []*discordgo.ApplicationCommand
@@ -26,7 +26,7 @@ type mockManager struct {
 
 func NewMockManager(dCfg *config.DiscordConfig, s *discordgo.Session, repo repository.Repository, logger logger.Logger, notifier notifier.Notifier) *mockManager {
 	return &mockManager{
-		dCfg:            dCfg,
+		dCfg:              dCfg,
 		session:           s,
 		retrievedCommands: make([]*discordgo.ApplicationCommand, 0),
 		repo:              repo,
