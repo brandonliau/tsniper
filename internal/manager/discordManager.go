@@ -43,9 +43,9 @@ func (m *discordManager) RegisterCommand(c command.Command) {
 	if err != nil {
 		m.logger.Error("Failed to add application command %s : %v", cname, err)
 	}
-	m.logger.Debug("Registered command %v", cname)
-	m.repo.Register(ccmd.Name, ccmd.ID)
+	m.repo.RegisterCommand(ccmd.Name, ccmd.ID)
 	m.commands[cname] = c
+	m.logger.Debug("Registered command %v", cname)
 }
 
 func (m *discordManager) RegisterComponent(c component.Component) {
@@ -53,8 +53,9 @@ func (m *discordManager) RegisterComponent(c component.Component) {
 	if _, ok := m.components[cname]; ok {
 		m.logger.Warn("Application component %s already registered", cname)
 	}
-	m.logger.Debug("Registered component %v", cname)
+	m.repo.RegisterComponent(cname, c.Component())
 	m.components[cname] = c
+	m.logger.Debug("Registered component %v", cname)
 }
 
 func (m *discordManager) CommandInteractionHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {

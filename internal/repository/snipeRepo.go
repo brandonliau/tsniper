@@ -22,38 +22,54 @@ type snipeRepo struct {
 	session        *discordgo.Session
 	db             database.Database
 	logger         logger.Logger
-	registered     map[string]string
+	registeredCommands   map[string]string
+	registeredComponents map[string]discordgo.MessageComponent
 	trackedCount   map[string]map[string]int
 	trackedIndices map[string][]string
 }
 
 func NewSnipeRepo(dCfg *config.DiscordConfig, sCfg *config.ServiceConfig, s *discordgo.Session, db database.Database, logger logger.Logger) *snipeRepo {
-	registered := make(map[string]string)
-	trackedCount := make(map[string]map[string]int)
-	trackedIndices := make(map[string][]string)
 	snipeRepo := &snipeRepo{
 		dCfg:           dCfg,
 		sCfg:           sCfg,
 		session:        s,
 		db:             db,
 		logger:         logger,
-		registered:     registered,
-		trackedCount:   trackedCount,
-		trackedIndices: trackedIndices,
+		registeredCommands:   make(map[string]string),
+		registeredComponents: make(map[string]discordgo.MessageComponent),
+		trackedCount:   make(map[string]map[string]int),
+		trackedIndices: make(map[string][]string),
 	}
 	return snipeRepo
 }
 
-// registered commands
-func (repo *snipeRepo) Register(name, id string) {
-	repo.registered[name] = id
+// command registration
+func (repo *snipeRepo) RegisterCommand(name string, id string) {
+	repo.registeredCommands[name] = id
 }
 
-func (repo *snipeRepo) Registered() map[string]string {
-	return repo.registered
+func (repo *snipeRepo) RetrieveCommands(names ...string) []string {
+	commands := make([]string, len(names))
+	for i, name := range names {
+		commands[i] = repo.registeredCommands[name]
+	}
+	return commands
 }
 
-// in-memory repository
+// component registration
+func (repo *snipeRepo) RegisterComponent(name string, component discordgo.MessageComponent) {
+	repo.registeredComponents[name] = component
+}
+
+func (repo *snipeRepo) RetrieveComponents(names ...string) []discordgo.MessageComponent {
+	components := make([]discordgo.MessageComponent, len(names))
+	for i, name := range names {
+		components[i] = repo.registeredComponents[name]
+	}
+	return components
+}
+
+// in-memory snipe management
 func (repo *snipeRepo) TrackedIndices(campus, season string) []string {
 	repo.mu.RLock()
 	defer repo.mu.RUnlock()

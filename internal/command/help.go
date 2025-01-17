@@ -36,7 +36,7 @@ func (c *helpCommand) Execute(args *shared.CmdArgs) (*discordgo.InteractionRespo
 }
 
 func (c *helpCommand) HelpEmbed() *discordgo.MessageEmbed {
-	registered := c.repo.Registered()
+	registered := c.repo.RetrieveCommands("add", "remove", "clear", "check", "search", "help", "uptime", "ping")
 	return &discordgo.MessageEmbed{
 		Title: "Commands",
 		Color: shared.Blue,
@@ -49,11 +49,11 @@ func (c *helpCommand) HelpEmbed() *discordgo.MessageEmbed {
 						"</clear:%s> - Remove all active snipe requests.\n"+
 						"</check:%s> - View all active snipe requests.\n"+
 						"</search:%s> - View course information for given index.",
-					registered["add"],
-					registered["remove"],
-					registered["clear"],
-					registered["check"],
-					registered["search"],
+					registered[0],
+					registered[1],
+					registered[2],
+					registered[3],
+					registered[4],
 				),
 				Inline: false,
 			},
@@ -63,9 +63,9 @@ func (c *helpCommand) HelpEmbed() *discordgo.MessageEmbed {
 					"</help:%s> - List all commands.\n"+
 						"</uptime:%s> - Check bot uptime.\n"+
 						"</ping:%s> - Check bot latency.",
-					registered["help"],
-					registered["uptime"],
-					registered["ping"],
+					registered[5],
+					registered[6],
+					registered[7],
 				),
 				Inline: false,
 			},

@@ -142,7 +142,7 @@ func (s *snipeService) snipeLoop() {
 			year := s.sCfg.SeasonData[season].Year
 			term := s.sCfg.SeasonData[season].Term
 			registerButton := component.NewRegisterButton(index, term, year, campus).Component()
-			resnipeButton := component.NewResnipeButton(s.dCfg, s.sCfg, s.repo, s.db).Component()
+			resnipeButton := s.repo.RetrieveComponents("resnipe")[0]
 			for _, userID := range s.repo.SnipeUsers(index, campus, season) {
 				user, _ := s.session.User(userID)
 				dmChannel, err := s.notifier.CreateDMChannel(userID)

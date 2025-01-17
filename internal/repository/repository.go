@@ -2,14 +2,20 @@ package repository
 
 import (
 	"Tsniper/internal/shared"
+
+	"github.com/bwmarrin/discordgo"
 )
 
 type Repository interface {
-	// registered commands
-	Register(name, id string)
-	Registered() map[string]string
+	// command registration
+	RegisterCommand(name string, id string)
+	RetrieveCommands(names ...string) []string
 
-	// in-memory repository
+	// component registration
+	RegisterComponent(name string, component discordgo.MessageComponent)
+	RetrieveComponents(names ...string) []discordgo.MessageComponent
+
+	// in-memory snipe management
 	TrackedIndices(campus, season string) []string
 	Sync()
 	Add(index, campus, season string)
