@@ -41,7 +41,7 @@ func main() {
 	notifier := notifier.NewDiscordNotifier(s)
 	indexingService := service.NewIndexingService(sCfg, repo, db, logger)
 	snipeService := service.NewSnipeService(sCfg, dCfg, s, repo, notifier, db, logger)
-	m := manager.NewDiscordManager(dCfg, s, repo, logger, notifier)
+	m := manager.NewMockManager(dCfg, s, repo, logger, notifier)
 
 	// Add event handlers
 	s.AddHandler(m.CommandInteractionHandler)
@@ -70,6 +70,9 @@ func main() {
 		logger.Fatal("Failed to start snipe service: %v", err)
 	}
 
+	// Retrieve application commands (mock only)
+	m.RetreiveCommands()
+
 	// Register application commands
 	m.RegisterCommand(command.NewAddCommand(dCfg, sCfg, repo, db))
 	m.RegisterCommand(command.NewRemoveCommand(dCfg, sCfg, repo, db))
@@ -83,8 +86,7 @@ func main() {
 	// Register application components
 	m.RegisterComponent(component.NewResnipeButton(dCfg, sCfg, repo, db))
 
-	// Update bot personalization
-	s.UpdateCustomStatus("👁️‍🗨️ Monitoring...")
+	// Bot online
 	logger.Info("Bot running")
 
 	// Create stop channel and block execution until a stop signal is received
@@ -103,9 +105,9 @@ func main() {
 	}
 
 	// Remove application commands
-	_, err = s.ApplicationCommandBulkOverwrite(s.State.User.ID, "", nil)
-	if err != nil {
-		logger.Error("Failed to delete application commands")
-	}
+	// _, err = s.ApplicationCommandBulkOverwrite(s.State.User.ID, "", nil)
+	// if err != nil {
+	// 	logger.Error("Failed to delete application commands")
+	// }
 	logger.Info("Bot shut down")
 }
