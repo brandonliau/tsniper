@@ -153,6 +153,7 @@ func (s *snipeService) snipeLoop() {
 				err = s.notifier.SendChannelMessage(dmChannel, notifier.MessageSend(user.Mention(), embed, registerButton, resnipeButton))
 				if err != nil {
 					s.logger.Warn("Failed to message user %s: %v", userID, err)
+					s.repo.RemoveSnipe(userID, index, campus, season)
 					continue
 				} else {
 					s.logger.Info("Notified user %s that %s is open", userID, index)
