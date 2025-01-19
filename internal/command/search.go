@@ -94,7 +94,7 @@ func (c *searchCommand) Execute(args *shared.CmdArgs) (*discordgo.InteractionRes
 	}
 
 	course := c.repo.CourseEntry(index, campus, season)
-	rsp := shared.EphemeralEmbedResponse(c.SuccessfulSearch(course))
+	rsp := shared.EphemeralEmbedResponse(c.SuccessfulSearch(course, campus, season))
 	return rsp, nil
 }
 
@@ -112,7 +112,14 @@ func (c *searchCommand) InvalidSearch(index string) *discordgo.MessageEmbed {
 	}
 }
 
-func (c *searchCommand) SuccessfulSearch(course shared.CourseEntry) *discordgo.MessageEmbed {
+func (c *searchCommand) SuccessfulSearch(course shared.CourseEntry, campus string, season string) *discordgo.MessageEmbed {
+	var lastOpen string
+	open := c.repo.LastOpen(course.Index, campus, season)
+	if open == -1 {
+		lastOpen = "`Unknown`\n"
+	} else {
+		lastOpen = fmt.Sprintf("<t:%d:R>\n", open)
+	}
 	return &discordgo.MessageEmbed{
 		Title: fmt.Sprintf("%s (`%s`)", course.Title, course.CourseString),
 		Color: shared.Blue,
@@ -146,6 +153,16 @@ func (c *searchCommand) SuccessfulSearch(course shared.CourseEntry) *discordgo.M
 				Name:   "Special Notes",
 				Value:  fmt.Sprintf("```fix\n%s```", course.Notes),
 				Inline: false,
+			},
+			{
+				Name: "Insights",
+				Value: fmt.Sprintf("👀`%d`", c.repo.SnipeCount(course.Index, campus, season)),
+				Inline: true,
+			},
+			{
+				Name: "Last open",
+				Value: fmt.Sprintf("%s", lastOpen),
+				Inline: true,
 			},
 		},
 		Thumbnail: &discordgo.MessageEmbedThumbnail{
