@@ -160,8 +160,8 @@ func (c *searchCommand) SuccessfulSearch(course shared.CourseEntry, campus strin
 				Inline: true,
 			},
 			{
-				Name:   "Last open",
-				Value:  fmt.Sprintf("%s", lastOpen),
+				Name:   "Last Open",
+				Value:  lastOpen,
 				Inline: true,
 			},
 		},
