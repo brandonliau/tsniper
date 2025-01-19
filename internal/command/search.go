@@ -155,13 +155,13 @@ func (c *searchCommand) SuccessfulSearch(course shared.CourseEntry, campus strin
 				Inline: false,
 			},
 			{
-				Name: "Insights",
-				Value: fmt.Sprintf("👀`%d`", c.repo.SnipeCount(course.Index, campus, season)),
+				Name:   "Insights",
+				Value:  fmt.Sprintf("👀`%d`", c.repo.SnipeCount(course.Index, campus, season)),
 				Inline: true,
 			},
 			{
-				Name: "Last open",
-				Value: fmt.Sprintf("%s", lastOpen),
+				Name:   "Last open",
+				Value:  fmt.Sprintf("%s", lastOpen),
 				Inline: true,
 			},
 		},
