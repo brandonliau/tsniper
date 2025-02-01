@@ -28,3 +28,18 @@ func Difference[T comparable](data1 []T, data2 []T) []T {
 	}
 	return diff
 }
+
+func Chunk[T any](slice []T, chunkSize int) [][]T {
+	if chunkSize <= 0 {
+		return nil
+	}
+	var chunks [][]T
+	for i := 0; i < len(slice); i += chunkSize {
+		end := i + chunkSize
+		if end > len(slice) {
+			end = len(slice)
+		}
+		chunks = append(chunks, slice[i:end])
+	}
+	return chunks
+}

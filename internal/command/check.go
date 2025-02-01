@@ -1,29 +1,33 @@
 package command
 
 import (
+	"database/sql"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
+	"Tsniper/internal/component"
 	"Tsniper/internal/repository"
 	"Tsniper/internal/shared"
+
+	"Tsniper/pkg/codec"
 	"Tsniper/pkg/config"
-	"Tsniper/pkg/database"
 
 	"github.com/bwmarrin/discordgo"
 )
 
 type checkCommand struct {
-	dCfg *config.DiscordConfig
-	repo repository.Repository
-	db   database.Database
+	dCfg  *config.DiscordConfig
+	repo  repository.Repository
+	codec codec.Codec
 }
 
-func NewCheckCommand(dCfg *config.DiscordConfig, repo repository.Repository, db database.Database) *checkCommand {
+func NewCheckCommand(dCfg *config.DiscordConfig, repo repository.Repository, codec codec.Codec) *checkCommand {
 	return &checkCommand{
-		dCfg: dCfg,
-		repo: repo,
-		db:   db,
+		dCfg:  dCfg,
+		repo:  repo,
+		codec: codec,
 	}
 }
 
@@ -37,50 +41,69 @@ func (c *checkCommand) Command() *discordgo.ApplicationCommand {
 func (c *checkCommand) Execute(args *shared.CmdArgs) (*discordgo.InteractionResponse, error) {
 	snipes := c.repo.Snipes(args.UserID)
 	if len(snipes) == 0 {
-		rsp := shared.EphemeralEmbedResponse(c.InvalidCheck())
+		rsp := shared.EphemeralEmbedResponse(shared.InvalidCheck())
 		return rsp, nil
 	}
 
+	// hash and check if hash already exists in database
+	hash := c.codec.Hash(snipes)
+	existingChunks, err := c.repo.RetrievePaginationEntry(hash)
+	texts := make([]string, 0)
+
+	// if there was an error and it wasn't and no row error
+	if err != nil && err != sql.ErrNoRows {
+		rsp := shared.EphemeralContentResponse("Something went wrong!")
+		return rsp, err
+	}
+
+	// check if chunks already exist
 	var builder strings.Builder
-	for _, snipe := range snipes {
-		index, campus, season := snipe[0], snipe[1], snipe[2]
-		course := c.repo.CourseEntry(index, campus, season)
-		count := c.repo.SnipeCount(index, campus, season)
-		lastOpen := c.repo.LastOpen(index, campus, season)
-		text := fmt.Sprintf("%s `%s` - %s (**Section %s**) | :eyes: `%d` | ", EmojiMap[season], course.Index, course.Title, course.Section, count)
-		builder.WriteString(text)
-		if lastOpen == -1 {
-			builder.WriteString("`Unknown`\n")
-		} else {
-			builder.WriteString(fmt.Sprintf("<t:%d:R>\n", lastOpen))
+	if existingChunks != "" {
+		err = json.Unmarshal([]byte(existingChunks), &texts)
+		if err != nil {
+			rsp := shared.EphemeralContentResponse("Something went wrong!")
+			return rsp, err
 		}
+	} else {
+		chunked := shared.Chunk(snipes, shared.SnipesPerPage)
+		for _, chunk := range chunked {
+			builder.Reset()
+			for _, snipe := range chunk {
+				index, campus, season := snipe[0], snipe[1], snipe[2]
+				course := c.repo.CourseEntry(index, campus, season)
+				count := c.repo.SnipeCount(index, campus, season)
+				lastOpen := c.repo.LastOpen(index, campus, season)
+				text := fmt.Sprintf("%s `%s` - %s (**Section %s**) | :eyes: `%d` | ", shared.EmojiMap[season], course.Index, course.Title, course.Section, count)
+				builder.WriteString(text)
+				if lastOpen == -1 {
+					builder.WriteString("`Unknown`\n")
+				} else {
+					builder.WriteString(fmt.Sprintf("<t:%d:R>\n", lastOpen))
+				}
+			}
+			texts = append(texts, builder.String())
+		}
+		data, err := json.Marshal(texts)
+		if err != nil {
+			rsp := shared.EphemeralContentResponse("Something went wrong!")
+			return rsp, err
+		}
+		c.repo.AddPaginationEntry(hash, data, time.Now().Unix())
 	}
 
-	rsp := shared.EphemeralEmbedResponse(c.SuccessfulCheck(builder.String()))
+	// create pagination buttons
+	var buttons []discordgo.MessageComponent
+	var embed *discordgo.MessageEmbed
+	if len(texts) > 1 {
+		moveButtons := c.repo.RetrieveComponents("backwardSkip", "previousPage", "nextPage", "forwardSkip")
+		pageButton := component.NewPageButton(1, len(texts), hash).Component()
+		buttons = []discordgo.MessageComponent{moveButtons[0], moveButtons[1], pageButton, moveButtons[2], moveButtons[3]}
+	}
+
+	embed = shared.SuccessfulCheck(texts[0])
+	rsp := shared.EphemeralEmbedResponse(embed)
+	if buttons != nil {
+		shared.AddComponent(rsp, buttons...)
+	}
 	return rsp, nil
-}
-
-func (c *checkCommand) InvalidCheck() *discordgo.MessageEmbed {
-	return &discordgo.MessageEmbed{
-		Title:       "Invalid Request!",
-		Description: "You have no active snipe requests.",
-		Color:       shared.Red,
-		Thumbnail: &discordgo.MessageEmbedThumbnail{
-			URL: c.dCfg.Image,
-		},
-		Footer: &discordgo.MessageEmbedFooter{
-			Text: time.Now().Format("01/02/2006 03:04:05 PM"),
-		},
-	}
-}
-
-func (c *checkCommand) SuccessfulCheck(text string) *discordgo.MessageEmbed {
-	return &discordgo.MessageEmbed{
-		Title:       "Active Requests",
-		Description: text,
-		Color:       shared.Blue,
-		Footer: &discordgo.MessageEmbedFooter{
-			Text: time.Now().Format("01/02/2006 03:04:05 PM"),
-		},
-	}
 }

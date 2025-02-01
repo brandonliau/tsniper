@@ -13,15 +13,13 @@ import (
 )
 
 type resnipeButton struct {
-	dCfg *config.DiscordConfig
 	sCfg *config.ServiceConfig
 	repo repository.Repository
 	db   database.Database
 }
 
-func NewResnipeButton(dCfg *config.DiscordConfig, sCfg *config.ServiceConfig, repo repository.Repository, db database.Database) *resnipeButton {
+func NewResnipeButton(sCfg *config.ServiceConfig, repo repository.Repository, db database.Database) *resnipeButton {
 	return &resnipeButton{
-		dCfg: dCfg,
 		sCfg: sCfg,
 		repo: repo,
 		db:   db,

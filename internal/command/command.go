@@ -12,13 +12,6 @@ var CampusName = map[string]string{
 	"CM": "camden",
 }
 
-var EmojiMap = map[string]string{
-	"spring": ":herb:",
-	"summer": ":sunny:",
-	"fall":   ":fallen_leaf:",
-	"winter": ":snowflake:",
-}
-
 type Command interface {
 	Command() *discordgo.ApplicationCommand
 	Execute(args *shared.CmdArgs) (*discordgo.InteractionResponse, error)

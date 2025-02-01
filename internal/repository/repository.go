@@ -39,6 +39,10 @@ type Repository interface {
 	LastOpens(campus, season string) map[string]int64
 	UpdateLastOpen(index, campus, season string, lastOpen int64)
 
+	// db pagination management
+	AddPaginationEntry(hash string, data []byte, datetime int64)
+	RetrievePaginationEntry(hash string) (string, error)
+
 	// discord user management
 	Campus(userID string) string
 }

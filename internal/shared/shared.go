@@ -5,10 +5,18 @@ import (
 )
 
 const (
-	Blue  = 0x5865f2
-	Green = 0x2dcc70
-	Red   = 0xe74d3b
+	Blue          = 0x5865f2
+	Green         = 0x2dcc70
+	Red           = 0xe74d3b
+	SnipesPerPage = 30
 )
+
+var EmojiMap = map[string]string{
+	"spring": ":herb:",
+	"summer": ":sunny:",
+	"fall":   ":fallen_leaf:",
+	"winter": ":snowflake:",
+}
 
 type CmdArgs struct {
 	Session     *discordgo.Session
@@ -61,11 +69,10 @@ func ModalResponse(ird *discordgo.InteractionResponseData) *discordgo.Interactio
 	}
 }
 
-func AddComponent(rsp *discordgo.InteractionResponseData, c ...discordgo.MessageComponent) *discordgo.InteractionResponseData {
-	rsp.Components = []discordgo.MessageComponent{
+func AddComponent(rsp *discordgo.InteractionResponse, c ...discordgo.MessageComponent) {
+	rsp.Data.Components = []discordgo.MessageComponent{
 		discordgo.ActionsRow{
 			Components: c,
 		},
 	}
-	return rsp
 }

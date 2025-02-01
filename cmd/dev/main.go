@@ -6,10 +6,6 @@ import (
 	"syscall"
 	"time"
 
-	"Tsniper/pkg/config"
-	"Tsniper/pkg/database"
-	"Tsniper/pkg/logger"
-
 	"Tsniper/internal/command"
 	"Tsniper/internal/component"
 	"Tsniper/internal/manager"
@@ -17,15 +13,21 @@ import (
 	"Tsniper/internal/repository"
 	"Tsniper/internal/service"
 
+	"Tsniper/pkg/codec"
+	"Tsniper/pkg/config"
+	"Tsniper/pkg/database"
+	"Tsniper/pkg/logger"
+
 	"github.com/bwmarrin/discordgo"
 	_ "modernc.org/sqlite"
 )
 
 func main() {
-	// Create logger, config, and database
+	// Create logger, config, codec, and database
 	logger := logger.NewStdLogger(logger.LevelDebug)
 	dCfg := config.NewDiscordConfig("./config/config.yml", logger)
 	sCfg := config.NewServiceConfig("./config/config.yml", logger)
+	codec := codec.NewFnvCodec()
 	db := database.NewSqliteDB("./database.db", logger)
 	defer db.Close()
 
@@ -41,6 +43,7 @@ func main() {
 	notifier := notifier.NewDiscordNotifier(s)
 	indexingService := service.NewIndexingService(sCfg, repo, db, logger)
 	snipeService := service.NewSnipeService(sCfg, dCfg, s, repo, notifier, db, logger)
+	paginationService := service.NewPaginationService(db, logger)
 	m := manager.NewMockManager(dCfg, s, repo, logger, notifier)
 
 	// Add event handlers
@@ -69,6 +72,10 @@ func main() {
 	if err != nil {
 		logger.Fatal("Failed to start snipe service: %v", err)
 	}
+	err = paginationService.Start()
+	if err != nil {
+		logger.Fatal("Failed to start pagination service: %v", err)
+	}
 
 	// Retrieve application commands (mock only)
 	m.RetreiveCommands()
@@ -77,14 +84,18 @@ func main() {
 	m.RegisterCommand(command.NewAddCommand(dCfg, sCfg, repo, db))
 	m.RegisterCommand(command.NewRemoveCommand(dCfg, sCfg, repo, db))
 	m.RegisterCommand(command.NewClearCommand(dCfg, repo, db))
-	m.RegisterCommand(command.NewCheckCommand(dCfg, repo, db))
+	m.RegisterCommand(command.NewCheckCommand(dCfg, repo, codec))
 	m.RegisterCommand(command.NewSearchCommand(dCfg, sCfg, repo, db))
 	m.RegisterCommand(command.NewPingCommand())
 	m.RegisterCommand(command.NewUptimeCommand(time.Now().Unix()))
 	m.RegisterCommand(command.NewHelpCommand(dCfg, repo))
 
 	// Register application components
-	m.RegisterComponent(component.NewResnipeButton(dCfg, sCfg, repo, db))
+	m.RegisterComponent(component.NewResnipeButton(sCfg, repo, db))
+	m.RegisterComponent(component.NewBackwardSkipButton(true, repo, db))
+	m.RegisterComponent(component.NewPreviousPageButton(true, repo, db))
+	m.RegisterComponent(component.NewNextPageButton(false, repo, db))
+	m.RegisterComponent(component.NewForwardSkipButton(false, repo, db))
 
 	// Bot online
 	logger.Info("Bot running")
@@ -102,6 +113,10 @@ func main() {
 	err = snipeService.Stop()
 	if err != nil {
 		logger.Error("Failed to stop snipe service: %v", err)
+	}
+	err = paginationService.Start()
+	if err != nil {
+		logger.Error("Failed to stop pagination service: %v", err)
 	}
 
 	// Remove application commands

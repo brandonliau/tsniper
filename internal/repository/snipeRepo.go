@@ -285,6 +285,21 @@ func (repo *snipeRepo) UpdateLastOpen(index, campus, season string, lastOpen int
 	repo.db.Exec(query, lastOpen, index, campus, season)
 }
 
+// db pagination management
+func (repo *snipeRepo) AddPaginationEntry(hash string, data []byte, datetime int64) {
+	repo.db.Exec("INSERT INTO pagination (check_hash, check_data, date_time) VALUES (?, ?, ?)", hash, string(data), datetime)
+}
+
+func (repo *snipeRepo) RetrievePaginationEntry(hash string) (string, error) {
+	row, _ := repo.db.QueryRow("SELECT check_data FROM pagination WHERE check_hash = ?", hash)
+	var data string
+	err := row.Scan(&data)
+	if err != nil {
+		return "", err
+	}
+	return data, nil
+}
+
 // discord user management
 func (repo *snipeRepo) Campus(userID string) string {
 	var member *discordgo.Member
