@@ -43,6 +43,7 @@ func main() {
 	notifier := notifier.NewDiscordNotifier(s)
 	indexingService := service.NewIndexingService(sCfg, repo, db, logger)
 	snipeService := service.NewSnipeService(sCfg, dCfg, s, repo, notifier, db, logger)
+	paginationService := service.NewPaginationService(db, logger)
 	m := manager.NewDiscordManager(dCfg, s, repo, logger, notifier)
 
 	// Add event handlers
@@ -70,6 +71,10 @@ func main() {
 	err = snipeService.Start()
 	if err != nil {
 		logger.Fatal("Failed to start snipe service: %v", err)
+	}
+	err = paginationService.Start()
+	if err != nil {
+		logger.Fatal("Failed to start pagination service: %v", err)
 	}
 
 	// Register application commands
@@ -105,6 +110,10 @@ func main() {
 	err = snipeService.Stop()
 	if err != nil {
 		logger.Error("Failed to stop snipe service: %v", err)
+	}
+	err = paginationService.Start()
+	if err != nil {
+		logger.Error("Failed to stop pagination service: %v", err)
 	}
 
 	// Remove application commands
