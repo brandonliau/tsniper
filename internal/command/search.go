@@ -115,7 +115,9 @@ func (c *searchCommand) InvalidSearch(index string) *discordgo.MessageEmbed {
 func (c *searchCommand) SuccessfulSearch(course shared.CourseEntry, campus string, season string) *discordgo.MessageEmbed {
 	var lastOpen string
 	open := c.repo.LastOpen(course.Index, campus, season)
-	if open == -1 {
+	if open == 0 {
+		lastOpen = "`Currently`\n"
+	} else if open == -1 {
 		lastOpen = "`Unknown`\n"
 	} else {
 		lastOpen = fmt.Sprintf("<t:%d:R>\n", open)
