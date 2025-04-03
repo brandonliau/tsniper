@@ -60,16 +60,16 @@ func (c *backwardPageButton) Execute(args *shared.CmdArgs) (*discordgo.Interacti
 	currentPage -= 1 // current page index
 
 	// unmarshal data and update embed description
-	var texts []string
-	err = json.Unmarshal([]byte(existingChunks), &texts)
+	var stringChunks []string
+	err = json.Unmarshal(existingChunks, &stringChunks)
 	if err != nil {
 		rsp := shared.EphemeralContentResponse("Something went wrong!")
 		return rsp, err
 	}
-	embed.Description = texts[currentPage-1]
+	embed.Description = stringChunks[currentPage-1]
 
 	// update page button
-	pageButton := NewPageButton(currentPage, len(texts), hash).Component()
+	pageButton := NewPageButton(currentPage, len(stringChunks), hash).Component()
 
 	// previous page button
 	if currentPage-1 > 0 {

@@ -60,16 +60,16 @@ func (c *nextPageButton) Execute(args *shared.CmdArgs) (*discordgo.InteractionRe
 	currentPage -= 1 // current page index
 
 	// unmarshal data and update embed description
-	var texts []string
-	err = json.Unmarshal([]byte(existingChunks), &texts)
+	var stringChunks []string
+	err = json.Unmarshal(existingChunks, &stringChunks)
 	if err != nil {
 		rsp := shared.EphemeralContentResponse("Something went wrong!")
 		return rsp, err
 	}
-	embed.Description = texts[currentPage+1]
+	embed.Description = stringChunks[currentPage+1]
 
 	// update page button
-	pageButton := NewPageButton(currentPage+2, len(texts), hash).Component()
+	pageButton := NewPageButton(currentPage+2, len(stringChunks), hash).Component()
 
 	// previous buttons (will always be valid when using the forward skip button)
 	actionsRow.Components[0].(*discordgo.Button).Disabled = false
@@ -78,7 +78,7 @@ func (c *nextPageButton) Execute(args *shared.CmdArgs) (*discordgo.InteractionRe
 	previousPageButton := actionsRow.Components[1]
 
 	// next page button
-	if currentPage+2 < len(texts) {
+	if currentPage+2 < len(stringChunks) {
 		actionsRow.Components[3].(*discordgo.Button).Disabled = false
 		actionsRow.Components[4].(*discordgo.Button).Disabled = false
 	} else {

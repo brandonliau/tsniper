@@ -54,16 +54,16 @@ func (c *backwardSkipButton) Execute(args *shared.CmdArgs) (*discordgo.Interacti
 	}
 
 	// unmarshal data and update embed description
-	var texts []string
-	err = json.Unmarshal([]byte(existingChunks), &texts)
+	var stringChunks []string
+	err = json.Unmarshal(existingChunks, &stringChunks)
 	if err != nil {
 		rsp := shared.EphemeralContentResponse("Something went wrong!")
 		return rsp, err
 	}
-	embed.Description = texts[0]
+	embed.Description = stringChunks[0]
 
 	// update page button
-	pageButton := NewPageButton(1, len(texts), hash).Component()
+	pageButton := NewPageButton(1, len(stringChunks), hash).Component()
 
 	// previous buttons (will always be invalid when using the backward skip button)
 	actionsRow.Components[0].(*discordgo.Button).Disabled = true

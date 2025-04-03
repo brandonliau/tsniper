@@ -17,13 +17,17 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+const (
+	snipesPerPage = 30
+)
+
 type checkCommand struct {
 	dCfg  *config.DiscordConfig
 	repo  repository.Repository
-	codec codec.Codec
+	codec codec.Codec[shared.Snipe]
 }
 
-func NewCheckCommand(dCfg *config.DiscordConfig, repo repository.Repository, codec codec.Codec) *checkCommand {
+func NewCheckCommand(dCfg *config.DiscordConfig, repo repository.Repository, codec codec.Codec[shared.Snipe]) *checkCommand {
 	return &checkCommand{
 		dCfg:  dCfg,
 		repo:  repo,
@@ -41,35 +45,37 @@ func (c *checkCommand) Command() *discordgo.ApplicationCommand {
 func (c *checkCommand) Execute(args *shared.CmdArgs) (*discordgo.InteractionResponse, error) {
 	snipes := c.repo.Snipes(args.UserID)
 	if len(snipes) == 0 {
-		rsp := shared.EphemeralEmbedResponse(shared.InvalidCheck())
-		return rsp, nil
+		return shared.EphemeralEmbedResponse(shared.InvalidCheck()), nil
 	}
 
-	// hash and check if hash already exists in database
-	hash := c.codec.Hash(snipes)
+	// hash snipes
+	hash, err := c.codec.Hash(snipes)
+	if err != nil {
+		return shared.EphemeralContentResponse("Something went wrong!"), err
+	}
+
+	// attempt to retrieve chunks
 	existingChunks, err := c.repo.RetrievePaginationEntry(hash)
-	texts := make([]string, 0)
-
-	// if there was an error and it wasn't and no row error
 	if err != nil && err != sql.ErrNoRows {
-		rsp := shared.EphemeralContentResponse("Something went wrong!")
-		return rsp, err
+		return shared.EphemeralContentResponse("Something went wrong!"), err
 	}
-
+	
 	// check if chunks already exist
+	var stringChunks []string
 	var builder strings.Builder
-	if existingChunks != "" {
-		err = json.Unmarshal([]byte(existingChunks), &texts)
+	var buttons []discordgo.MessageComponent
+	
+	if existingChunks != nil {
+		err := json.Unmarshal(existingChunks, &stringChunks)
 		if err != nil {
-			rsp := shared.EphemeralContentResponse("Something went wrong!")
-			return rsp, err
+			return shared.EphemeralContentResponse("Something went wrong!"), err
 		}
 	} else {
-		chunked := shared.Chunk(snipes, shared.SnipesPerPage)
+		chunked := shared.Chunk(snipes, snipesPerPage)
 		for _, chunk := range chunked {
 			builder.Reset()
 			for _, snipe := range chunk {
-				index, campus, season := snipe[0], snipe[1], snipe[2]
+				index, campus, season := snipe.Index, snipe.Campus, snipe.Season
 				course := c.repo.CourseEntry(index, campus, season)
 				count := c.repo.SnipeCount(index, campus, season)
 				lastOpen := c.repo.LastOpen(index, campus, season)
@@ -81,26 +87,28 @@ func (c *checkCommand) Execute(args *shared.CmdArgs) (*discordgo.InteractionResp
 					builder.WriteString(fmt.Sprintf("<t:%d:R>\n", lastOpen))
 				}
 			}
-			texts = append(texts, builder.String())
+			stringChunks = append(stringChunks, builder.String())
 		}
-		data, err := json.Marshal(texts)
+	}
+
+	// add pagination entry
+	if existingChunks == nil && len(stringChunks) > 1 {
+		data, err := json.Marshal(stringChunks)
 		if err != nil {
-			rsp := shared.EphemeralContentResponse("Something went wrong!")
-			return rsp, err
+			return shared.EphemeralContentResponse("Something went wrong!"), err
 		}
 		c.repo.AddPaginationEntry(hash, data, time.Now().Unix())
 	}
 
-	// create pagination buttons
-	var buttons []discordgo.MessageComponent
-	var embed *discordgo.MessageEmbed
-	if len(texts) > 1 {
+	// retrieve pagination buttons
+	if len(stringChunks) > 1 {
 		moveButtons := c.repo.RetrieveComponents("backwardSkip", "previousPage", "nextPage", "forwardSkip")
-		pageButton := component.NewPageButton(1, len(texts), hash).Component()
+		pageButton := component.NewPageButton(1, len(stringChunks), hash).Component()
 		buttons = []discordgo.MessageComponent{moveButtons[0], moveButtons[1], pageButton, moveButtons[2], moveButtons[3]}
 	}
 
-	embed = shared.SuccessfulCheck(texts[0])
+	// create and send embed
+	embed := shared.SuccessfulCheck(stringChunks[0])
 	rsp := shared.EphemeralEmbedResponse(embed)
 	if buttons != nil {
 		shared.AddComponent(rsp, buttons...)

@@ -54,16 +54,16 @@ func (c *forwardSkipButton) Execute(args *shared.CmdArgs) (*discordgo.Interactio
 	}
 
 	// unmarshal data and update embed description
-	var texts []string
-	err = json.Unmarshal([]byte(existingChunks), &texts)
+	var stringChunks []string
+	err = json.Unmarshal(existingChunks, &stringChunks)
 	if err != nil {
 		rsp := shared.EphemeralContentResponse("Something went wrong!")
 		return rsp, err
 	}
-	embed.Description = texts[len(texts)-1]
+	embed.Description = stringChunks[len(stringChunks)-1]
 
 	// update page button
-	pageButton := NewPageButton(len(texts), len(texts), hash).Component()
+	pageButton := NewPageButton(len(stringChunks), len(stringChunks), hash).Component()
 
 	// previous buttons (will always be valid when using the forward skip button)
 	actionsRow.Components[0].(*discordgo.Button).Disabled = false

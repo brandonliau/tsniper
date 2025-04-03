@@ -22,7 +22,7 @@ type Repository interface {
 	Remove(index, campus, season string)
 
 	// db user management
-	Snipes(userID string) [][]string // [][]string{index, campus, season}
+	Snipes(userID string) []shared.Snipe
 	IsSniping(userID, index, campus, season string) bool
 
 	// db snipe management
@@ -41,7 +41,7 @@ type Repository interface {
 
 	// db pagination management
 	AddPaginationEntry(hash string, data []byte, datetime int64)
-	RetrievePaginationEntry(hash string) (string, error)
+	RetrievePaginationEntry(hash string) ([]byte, error)
 
 	// discord user management
 	Campus(userID string) string

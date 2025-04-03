@@ -1,5 +1,11 @@
 package shared
 
+type Snipe struct {
+	Index string
+	Campus string
+	Season string
+}
+
 type Course struct {
 	Title        string `json:"title"`
 	CourseString string `json:"courseString"`

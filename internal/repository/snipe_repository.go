@@ -177,17 +177,17 @@ func (repo *snipeRepo) Remove(index, campus, season string) {
 }
 
 // db user management
-func (repo *snipeRepo) Snipes(userID string) [][]string {
-	snipes := make([][]string, 0)
+func (repo *snipeRepo) Snipes(userID string) []shared.Snipe {
+	snipes := make([]shared.Snipe, 0)
 	rows, _ := repo.db.Query("SELECT course_index, campus, season FROM snipes WHERE user_id = ?", userID)
 	defer rows.Close()
-	var index, campus, season string
+	var snipe shared.Snipe
 	for rows.Next() {
-		rows.Scan(&index, &campus, &season)
-		snipes = append(snipes, []string{index, campus, season})
+		rows.Scan(&snipe.Index, &snipe.Campus, &snipe.Season)
+		snipes = append(snipes, snipe)
 	}
 	sort.SliceStable(snipes, func(i, j int) bool {
-		return snipes[i][0] < snipes[j][0]
+		return snipes[i].Index < snipes[j].Index
 	})
 	return snipes
 }
@@ -290,14 +290,14 @@ func (repo *snipeRepo) AddPaginationEntry(hash string, data []byte, datetime int
 	repo.db.Exec("INSERT INTO pagination (check_hash, check_data, date_time) VALUES (?, ?, ?)", hash, string(data), datetime)
 }
 
-func (repo *snipeRepo) RetrievePaginationEntry(hash string) (string, error) {
+func (repo *snipeRepo) RetrievePaginationEntry(hash string) ([]byte, error) {
 	row, _ := repo.db.QueryRow("SELECT check_data FROM pagination WHERE check_hash = ?", hash)
 	var data string
 	err := row.Scan(&data)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return data, nil
+	return []byte(data), nil
 }
 
 // discord user management

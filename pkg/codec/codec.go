@@ -1,5 +1,5 @@
 package codec
 
-type Codec interface {
-	Hash(data [][]string) string
+type Codec[T any] interface {
+	Hash(data []T) (string, error)
 }

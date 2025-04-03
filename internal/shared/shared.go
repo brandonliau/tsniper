@@ -8,7 +8,6 @@ const (
 	Blue          = 0x5865f2
 	Green         = 0x2dcc70
 	Red           = 0xe74d3b
-	SnipesPerPage = 30
 )
 
 var EmojiMap = map[string]string{

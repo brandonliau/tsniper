@@ -41,7 +41,7 @@ func (c *clearCommand) Execute(args *shared.CmdArgs) (*discordgo.InteractionResp
 
 	c.repo.ClearSnipe(args.UserID)
 	for _, snipe := range snipes {
-		index, campus, season := snipe[0], snipe[1], snipe[2]
+		index, campus, season := snipe.Index, snipe.Campus, snipe.Season
 		c.repo.Remove(index, campus, season)
 	}
 

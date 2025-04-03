@@ -12,6 +12,7 @@ import (
 	"Tsniper/internal/notifier"
 	"Tsniper/internal/repository"
 	"Tsniper/internal/service"
+	"Tsniper/internal/shared"
 
 	"Tsniper/pkg/codec"
 	"Tsniper/pkg/config"
@@ -27,7 +28,7 @@ func main() {
 	logger := logger.NewStdLogger(logger.LevelDebug)
 	dCfg := config.NewDiscordConfig("./config/config.yml", logger)
 	sCfg := config.NewServiceConfig("./config/config.yml", logger)
-	codec := codec.NewFnvCodec()
+	codec := codec.NewFnvCodec[shared.Snipe]()
 	db := database.NewSqliteDB("./database.db", logger)
 	defer db.Close()
 

@@ -34,7 +34,7 @@ func (m *mockManager) GuildMemberRemoveHandler(s *discordgo.Session, g *discordg
 	snipes := m.repo.Snipes(g.Member.User.ID)
 	m.repo.ClearSnipe(g.Member.User.ID)
 	for _, snipe := range snipes {
-		index, campus, season := snipe[0], snipe[1], snipe[2]
+		index, campus, season := snipe.Index, snipe.Campus, snipe.Season
 		m.repo.Remove(index, campus, season)
 	}
 	m.logger.Info("Guild member remove event")
