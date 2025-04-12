@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	"Tsniper/internal/repository"
-	"Tsniper/internal/shared"
-	"Tsniper/pkg/config"
+	"tsniper/internal/repository"
+	"tsniper/internal/shared"
+	"tsniper/pkg/config"
 
 	"github.com/bwmarrin/discordgo"
 )

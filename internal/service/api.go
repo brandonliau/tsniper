@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"Tsniper/internal/shared"
+	"tsniper/internal/shared"
 )
 
 func fetchData(client *http.Client, baseURL string, params url.Values, result any) error {

@@ -7,12 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"Tsniper/internal/component"
-	"Tsniper/internal/repository"
-	"Tsniper/internal/shared"
+	"tsniper/internal/component"
+	"tsniper/internal/repository"
+	"tsniper/internal/shared"
 
-	"Tsniper/pkg/codec"
-	"Tsniper/pkg/config"
+	"tsniper/pkg/codec"
+	"tsniper/pkg/config"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -59,12 +59,12 @@ func (c *checkCommand) Execute(args *shared.CmdArgs) (*discordgo.InteractionResp
 	if err != nil && err != sql.ErrNoRows {
 		return shared.EphemeralContentResponse("Something went wrong!"), err
 	}
-	
+
 	// check if chunks already exist
 	var stringChunks []string
 	var builder strings.Builder
 	var buttons []discordgo.MessageComponent
-	
+
 	if existingChunks != nil {
 		err := json.Unmarshal(existingChunks, &stringChunks)
 		if err != nil {

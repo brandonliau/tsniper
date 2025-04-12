@@ -1,13 +1,13 @@
 package manager
 
 import (
-	"Tsniper/internal/command"
-	"Tsniper/internal/component"
-	"Tsniper/internal/notifier"
-	"Tsniper/internal/repository"
-	"Tsniper/internal/shared"
-	"Tsniper/pkg/config"
-	"Tsniper/pkg/logger"
+	"tsniper/internal/command"
+	"tsniper/internal/component"
+	"tsniper/internal/notifier"
+	"tsniper/internal/repository"
+	"tsniper/internal/shared"
+	"tsniper/pkg/config"
+	"tsniper/pkg/logger"
 
 	"github.com/bwmarrin/discordgo"
 )

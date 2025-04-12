@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"Tsniper/internal/notifier"
-	"Tsniper/internal/shared"
+	"tsniper/internal/notifier"
+	"tsniper/internal/shared"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -43,7 +43,7 @@ func (m *mockManager) GuildMemberRemoveHandler(s *discordgo.Session, g *discordg
 func (m *mockManager) joinEmbed(user *discordgo.User) *discordgo.MessageEmbed {
 	guild, _ := m.session.State.Guild(m.dCfg.Guild)
 	return &discordgo.MessageEmbed{
-		Title:       "Welcome to the TSniper server!",
+		Title:       "Welcome to the tsniper server!",
 		Description: fmt.Sprintf("%s has joined the server!\n\nYou are user **#%d**!", user.Mention(), guild.MemberCount),
 		Color:       shared.Green,
 		Thumbnail: &discordgo.MessageEmbedThumbnail{

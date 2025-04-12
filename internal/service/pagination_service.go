@@ -3,8 +3,8 @@ package service
 import (
 	"time"
 
-	"Tsniper/pkg/database"
-	"Tsniper/pkg/logger"
+	"tsniper/pkg/database"
+	"tsniper/pkg/logger"
 
 	"github.com/robfig/cron/v3"
 )

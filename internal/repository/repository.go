@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"Tsniper/internal/shared"
+	"tsniper/internal/shared"
 
 	"github.com/bwmarrin/discordgo"
 )

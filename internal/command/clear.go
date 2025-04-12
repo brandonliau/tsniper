@@ -3,10 +3,10 @@ package command
 import (
 	"time"
 
-	"Tsniper/internal/repository"
-	"Tsniper/internal/shared"
-	"Tsniper/pkg/config"
-	"Tsniper/pkg/database"
+	"tsniper/internal/repository"
+	"tsniper/internal/shared"
+	"tsniper/pkg/config"
+	"tsniper/pkg/database"
 
 	"github.com/bwmarrin/discordgo"
 )

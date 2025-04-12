@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"os"
 
-	"Tsniper/pkg/logger"
+	"tsniper/pkg/logger"
 )
 
 type SqliteDB struct {

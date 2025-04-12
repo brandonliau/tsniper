@@ -7,10 +7,10 @@ import (
 	"sync"
 	"time"
 
-	"Tsniper/internal/shared"
-	"Tsniper/pkg/config"
-	"Tsniper/pkg/database"
-	"Tsniper/pkg/logger"
+	"tsniper/internal/shared"
+	"tsniper/pkg/config"
+	"tsniper/pkg/database"
+	"tsniper/pkg/logger"
 
 	"github.com/bwmarrin/discordgo"
 )

@@ -1,4 +1,4 @@
-module Tsniper
+module tsniper
 
 go 1.23.5
 

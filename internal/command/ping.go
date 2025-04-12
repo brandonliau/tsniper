@@ -3,7 +3,7 @@ package command
 import (
 	"fmt"
 
-	"Tsniper/internal/shared"
+	"tsniper/internal/shared"
 
 	"github.com/bwmarrin/discordgo"
 )

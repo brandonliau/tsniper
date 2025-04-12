@@ -1,8 +1,8 @@
 package manager
 
 import (
-	"Tsniper/internal/command"
-	"Tsniper/internal/component"
+	"tsniper/internal/command"
+	"tsniper/internal/component"
 )
 
 type Manager interface {

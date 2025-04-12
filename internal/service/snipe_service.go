@@ -5,14 +5,14 @@ import (
 	"net/http"
 	"time"
 
-	"Tsniper/internal/component"
-	"Tsniper/internal/notifier"
-	"Tsniper/internal/repository"
-	"Tsniper/internal/shared"
-	"Tsniper/pkg/config"
-	"Tsniper/pkg/database"
-	"Tsniper/pkg/logger"
-	"Tsniper/pkg/multitick"
+	"tsniper/internal/component"
+	"tsniper/internal/notifier"
+	"tsniper/internal/repository"
+	"tsniper/internal/shared"
+	"tsniper/pkg/config"
+	"tsniper/pkg/database"
+	"tsniper/pkg/logger"
+	"tsniper/pkg/multitick"
 
 	"github.com/bwmarrin/discordgo"
 )

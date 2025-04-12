@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"Tsniper/internal/repository"
-	"Tsniper/pkg/config"
-	"Tsniper/pkg/database"
-	"Tsniper/pkg/logger"
+	"tsniper/internal/repository"
+	"tsniper/pkg/config"
+	"tsniper/pkg/database"
+	"tsniper/pkg/logger"
 
 	"github.com/robfig/cron/v3"
 )

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"Tsniper/pkg/logger"
+	"tsniper/pkg/logger"
 
 	"gopkg.in/yaml.v3"
 )

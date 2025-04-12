@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"strconv"
 
-	"Tsniper/internal/repository"
-	"Tsniper/internal/shared"
+	"tsniper/internal/repository"
+	"tsniper/internal/shared"
 
-	"Tsniper/pkg/database"
+	"tsniper/pkg/database"
 
 	"github.com/bwmarrin/discordgo"
 )
