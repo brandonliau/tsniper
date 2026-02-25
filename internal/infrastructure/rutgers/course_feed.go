@@ -26,6 +26,7 @@ type courseFeedData struct {
 		Section      string              `json:"number"`
 		Instructors  string              `json:"instructorsText"`
 		SectionNotes string              `json:"sectionNotes"`
+		OpenStatus   bool                `json:"openStatus"`
 		MeetingTimes []courseFeedMeeting `json:"meetingTimes"`
 	} `json:"sections"`
 }

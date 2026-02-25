@@ -49,6 +49,11 @@ func courseFeedDataToCourses(data []courseFeedData, scp scope.AcademicScope) []*
 			meetings := strings.Join(lines, "\n")
 
 			crs := course.NewCourse(sec.Index, crs.Title, crs.CourseString, sec.Section, instructors, notes, meetings, scp)
+			
+			if sec.OpenStatus {
+				crs.Open()
+			}
+
 			courses = append(courses, crs)
 		}
 	}

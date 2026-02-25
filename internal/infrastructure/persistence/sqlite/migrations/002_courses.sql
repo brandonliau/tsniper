@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS courses;
-
 CREATE TABLE IF NOT EXISTS courses (
     course_index  TEXT,
     course_string TEXT,
@@ -11,6 +9,7 @@ CREATE TABLE IF NOT EXISTS courses (
     campus        TEXT,
     term          TEXT,
     year          TEXT,
+    last_open     BIGINT,
     UNIQUE (course_index, campus, term, year)
 );
 
