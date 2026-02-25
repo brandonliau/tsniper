@@ -160,7 +160,7 @@ func (r *CourseRepositoryImpl) BatchCreate(courses []*course.Course) error {
 	defer tx.Rollback()
 
 	stmt, err := tx.Prepare(
-		`INSERT OR REPLACE INTO courses (course_index, course_string, section, title, instructors, notes, meeting, campus, term, year, last_open)
+		`INSERT OR IGNORE INTO courses (course_index, course_string, section, title, instructors, notes, meeting, campus, term, year, last_open)
 		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 	)
 	if err != nil {

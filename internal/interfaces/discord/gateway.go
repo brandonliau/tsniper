@@ -57,10 +57,7 @@ func (g *gateway) Start() {
 		lastUserID = gm[len(gm)-1].User.ID
 	}
 
-	toAdd := utils.Difference(members, users)
-	toRemove := utils.Difference(users, members)
-
-	for _, userID := range toAdd {
+	for _, userID := range utils.Difference(members, users) {
 		_, err := g.userService.Join(usecase.UserJoinRequest{UserID: userID})
 		if err != nil {
 			g.logger.Warn("Failed to add user %s: %v", userID, err)
@@ -92,7 +89,7 @@ func (g *gateway) Start() {
 		}
 	}
 
-	for _, userID := range toRemove {
+	for _, userID := range utils.Difference(users, members) {
 		_, err := g.userService.Leave(usecase.UserLeaveRequest{UserID: userID})
 		if err != nil {
 			g.logger.Warn("Failed to remove user %s: %v", userID, err)

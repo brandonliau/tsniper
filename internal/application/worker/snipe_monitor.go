@@ -1,7 +1,6 @@
 package worker
 
 import (
-	"sync"
 	"time"
 
 	"tsniper/internal/application/event"
@@ -24,7 +23,6 @@ const (
 type snipeMonitor struct {
 	activeScope      scope.ActiveScope
 	ticker           *multiticker.MultiTicker
-	wg               sync.WaitGroup
 	eventPublisher   eventbus.Publisher[event.CourseOpen]
 	sectionsFeed     ports.SectionsFeed
 	snipeCache       snipe.SnipeCache
@@ -75,7 +73,6 @@ func (s *snipeMonitor) Start() error {
 
 func (s *snipeMonitor) Stop() error {
 	s.ticker.Stop()
-	s.wg.Wait()
 	return nil
 }
 
