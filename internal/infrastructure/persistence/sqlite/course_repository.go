@@ -25,7 +25,7 @@ func NewCourseRepository(db *database.SqliteDB) *CourseRepositoryImpl {
 func (r *CourseRepositoryImpl) Create(crs *course.Course) error {
 	return r.db.Exec(
 		`INSERT OR IGNORE INTO courses (course_index, course_string, section, title, instructors, notes, meeting, campus, term, year, last_open)
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		crs.Index,
 		crs.CourseString,
 		crs.Section,
@@ -161,7 +161,7 @@ func (r *CourseRepositoryImpl) BatchCreate(courses []*course.Course) error {
 
 	stmt, err := tx.Prepare(
 		`INSERT OR REPLACE INTO courses (course_index, course_string, section, title, instructors, notes, meeting, campus, term, year, last_open)
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 	)
 	if err != nil {
 		return err

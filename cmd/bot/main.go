@@ -155,9 +155,9 @@ func main() {
 	openCourseNotifier.Stop()
 
 	// Remove application commands
-	_, err = s.ApplicationCommandBulkOverwrite(s.State.User.ID, "", nil)
-	if err != nil {
-		logger.Error("Failed to delete application commands")
-	}
+	// _, err = s.ApplicationCommandBulkOverwrite(s.State.User.ID, "", nil)
+	// if err != nil {
+	// 	logger.Error("Failed to delete application commands")
+	// }
 	logger.Info("Bot shut down")
 }

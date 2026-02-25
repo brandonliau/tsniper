@@ -80,14 +80,35 @@ func (s *snipeMonitor) Stop() error {
 }
 
 func (s *snipeMonitor) monitorSnipes(ch <-chan time.Time, scp scope.AcademicScope) {
+	var previous []string
 	for range ch {
 		feed, err := s.sectionsFeed.FetchOpenSections(scp)
 		if err != nil {
 			continue
 		}
-		tracked := s.snipeCache.Tracked(scp)
 
-		openSections := utils.Intersection(feed, tracked)
+		for _, index := range utils.Difference(feed, previous) {
+			crs, err := s.courseRepository.Get(index, scp)
+			if err != nil {
+				continue
+			}
+			if crs.LastOpen != 0 {
+				crs.Open()
+				s.courseRepository.Save(crs)
+			}
+		}
+
+		for _, index := range utils.Difference(previous, feed) {
+			crs, err := s.courseRepository.Get(index, scp)
+			if err != nil {
+				continue
+			}
+			crs.Close()
+			s.courseRepository.Save(crs)
+		}
+		previous = feed
+
+		openSections := utils.Intersection(feed, s.snipeCache.Tracked(scp))
 		for _, index := range openSections {
 			crs, err := s.courseRepository.Get(index, scp)
 			if err != nil {

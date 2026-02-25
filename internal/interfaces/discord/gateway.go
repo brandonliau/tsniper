@@ -113,11 +113,11 @@ func (g *gateway) RegisterCommand(def *discordgo.ApplicationCommand, handleFunc 
 		return
 	}
 
-	_, err := g.session.ApplicationCommandCreate(g.applicationID, "", def)
-	if err != nil {
-		g.logger.Error("Failed to register command %s: %v", def.Name, err)
-		return
-	}
+	// _, err := g.session.ApplicationCommandCreate(g.applicationID, "", def)
+	// if err != nil {
+	// 	g.logger.Error("Failed to register command %s: %v", def.Name, err)
+	// 	return
+	// }
 
 	g.handleFuncs[def.Name] = handleFunc
 	g.logger.Info("Registered command %s", def.Name)
