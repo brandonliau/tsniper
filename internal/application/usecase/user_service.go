@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"tsniper/internal/domain/scope"
 	"tsniper/internal/domain/snipe"
 	"tsniper/internal/domain/user"
 )
@@ -51,6 +52,34 @@ func (s *UserService) GetAll(req GetAllUsersRequest) (*GetAllUsersResult, error)
 	}
 
 	return &GetAllUsersResult{Users: users}, nil
+}
+
+// --- Set User Campus ---
+type SetUserCampusRequest struct {
+	UserID string
+	Campus string
+}
+
+type SetUserCampusResult struct{}
+
+func (s *UserService) SetUserCampus(req SetUserCampusRequest) (*SetUserCampusResult, error) {
+	usr, err := s.userRepository.Get(req.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	campus, err := scope.ParseCampus(req.Campus)
+	if err != nil {
+		return nil, err
+	}
+
+	usr.SetCampus(campus)
+
+	if err := s.userRepository.Save(usr); err != nil {
+		return nil, err
+	}
+
+	return &SetUserCampusResult{}, nil
 }
 
 // --- User Join ---

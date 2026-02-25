@@ -82,7 +82,7 @@ func main() {
 	systemService := usecase.NewSystemService(systemMonitor)
 
 	// Create application gateways
-	discordGateway := discord.NewGateway(s, cfg.Discord.ApplicationID, cfg.Discord.GuildID, userService, logger)
+	discordGateway := discord.NewGateway(s, cfg.Discord.ApplicationID, cfg.Discord.GuildID, userService, cfg.Discord, logger)
 
 	// Create event notifiers
 	openCourseNotifier := discord.NewOpenCourseNotifier(openCourseEventBus, s, cfg.Customization, logger)
@@ -155,9 +155,9 @@ func main() {
 	openCourseNotifier.Stop()
 
 	// Remove application commands
-	// _, err = s.ApplicationCommandBulkOverwrite(s.State.User.ID, "", nil)
-	// if err != nil {
-	// 	logger.Error("Failed to delete application commands")
-	// }
+	_, err = s.ApplicationCommandBulkOverwrite(s.State.User.ID, "", nil)
+	if err != nil {
+		logger.Error("Failed to delete application commands")
+	}
 	logger.Info("Bot shut down")
 }

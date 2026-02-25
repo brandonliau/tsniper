@@ -9,7 +9,6 @@ import (
 
 type Config struct {
 	Discord       *DiscordConfig       `yaml:"discord"`
-	Stripe        *StripeConfig        `yaml:"stripe"`
 	Customization *CustomizationConfig `yaml:"customization"`
 	Academic      *AcademicConfig      `yaml:"academic"`
 }
@@ -35,10 +34,6 @@ func (c *Config) Validate() error {
 	err := c.Discord.Validate()
 	if err != nil {
 		return fmt.Errorf("Discord: %v", err)
-	}
-	err = c.Stripe.Validate()
-	if err != nil {
-		return fmt.Errorf("Stripe: %v", err)
 	}
 	err = c.Customization.Validate()
 	if err != nil {

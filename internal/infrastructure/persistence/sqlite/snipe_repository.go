@@ -28,7 +28,7 @@ func NewSnipeRepository(db *database.SqliteDB) *SnipeRepositoryImpl {
 func (r *SnipeRepositoryImpl) Create(snp *snipe.Snipe) error {
 	err := r.db.Exec(
 		`INSERT INTO snipes (user_id, course_index, campus, term, year)
-		 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+		 VALUES (?, ?, ?, ?, ?)`,
 		snp.UserID,
 		snp.Index,
 		snp.Scope.Campus,

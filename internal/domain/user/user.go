@@ -21,3 +21,7 @@ func (u *User) DefaultCampus() *scope.Campus {
 	}
 	return &u.Campus
 }
+
+func (u *User) SetCampus(campus scope.Campus) {
+	u.Campus = campus
+}

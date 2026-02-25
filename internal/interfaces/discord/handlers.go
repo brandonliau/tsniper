@@ -3,6 +3,7 @@ package discord
 import (
 	"tsniper/internal/application/usecase"
 	"tsniper/internal/interfaces/discord/interaction"
+	"tsniper/internal/interfaces/discord/presentation"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -59,19 +60,29 @@ func (g *gateway) RateLimitHandler(s *discordgo.Session, r *discordgo.RateLimit)
 	g.logger.Info("Rate limit event")
 }
 
-func (g *gateway) MemberJoinHandler(s *discordgo.Session, r *discordgo.GuildMemberAdd) {
-	_, err := g.userService.Join(usecase.UserJoinRequest{UserID: r.User.ID})
+func (g *gateway) MemberJoinHandler(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
+	_, err := g.userService.Join(usecase.UserJoinRequest{UserID: m.User.ID})
 	if err != nil {
-		g.logger.Error("Failed to add user on join %s: %v", r.User.ID, err)
+		g.logger.Error("Failed to add user on join %s: %v", m.User.ID, err)
+		return
+	}
+	guild, err := s.State.Guild(g.guildID)
+	if err != nil {
+		g.logger.Error("Failed to get guild %s: %v", g.guildID, err)
+		return
+	}
+	_, err = g.session.ChannelMessageSendEmbed(g.cfg.Channels.Boarding, presentation.JoinEmbed(m.User, guild.MemberCount))
+	if err != nil {
+		g.logger.Error("Failed to send join embed for user %s: %v", m.User.ID, err)
 		return
 	}
 	g.logger.Info("Member join event")
 }
 
-func (g *gateway) MemberLeaveHandler(s *discordgo.Session, r *discordgo.GuildMemberRemove) {
-	_, err := g.userService.Leave(usecase.UserLeaveRequest{UserID: r.User.ID})
+func (g *gateway) MemberLeaveHandler(s *discordgo.Session, m *discordgo.GuildMemberRemove) {
+	_, err := g.userService.Leave(usecase.UserLeaveRequest{UserID: m.User.ID})
 	if err != nil {
-		g.logger.Error("Failed to remove user on leave %s: %v", r.User.ID, err)
+		g.logger.Error("Failed to remove user on leave %s: %v", m.User.ID, err)
 		return
 	}
 	g.logger.Info("Member leave event")
