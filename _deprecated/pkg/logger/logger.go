@@ -14,5 +14,4 @@ type Logger interface {
 	Warn(msg string, v ...any)
 	Error(msg string, v ...any)
 	Fatal(msg string, v ...any)
-	Dump(path string, msg string, v ...any)
 }

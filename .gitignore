@@ -1,4 +1,7 @@
 *.yml
+*.out
+*.txt
 *.db
 *.db-shm
 *.db-wal
+*.cursor

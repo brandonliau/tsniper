@@ -1,0 +1,72 @@
+package usecase
+
+import (
+	"tsniper/internal/domain/course"
+	"tsniper/internal/domain/scope"
+	"tsniper/internal/domain/user"
+)
+
+type CourseService struct {
+	activeScope      scope.ActiveScope
+	userRepository   user.UserRepository
+	courseRepository course.CourseRepository
+}
+
+func NewCourseService(activeScope scope.ActiveScope, userRepository user.UserRepository, courseRepository course.CourseRepository) *CourseService {
+	return &CourseService{
+		activeScope:      activeScope,
+		userRepository:   userRepository,
+		courseRepository: courseRepository,
+	}
+}
+
+// --- Search Course ---
+type SearchCourseRequest struct {
+	UserID string
+	Index  string
+	Campus *string
+	Season *string
+}
+
+type SearchCourseResult struct {
+	Course *course.Course
+}
+
+func (s *CourseService) Search(req SearchCourseRequest) (*SearchCourseResult, error) {
+	usr, err := s.userRepository.Get(req.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	var cmp *scope.Campus
+	if req.Campus != nil {
+		parsed, err := scope.ParseCampus(*req.Campus)
+		if err != nil {
+			return nil, err
+		}
+		cmp = &parsed
+	} else {
+		cmp = usr.DefaultCampus()
+	}
+
+	var szn *scope.Season
+	if req.Season != nil {
+		parsed, err := s.activeScope.ParseSeason(*req.Season)
+		if err != nil {
+			return nil, err
+		}
+		szn = &parsed
+	}
+
+	scp, err := s.activeScope.Resolve(cmp, szn)
+	if err != nil {
+		return nil, err
+	}
+
+	crs, err := s.courseRepository.Get(req.Index, scp)
+	if err != nil {
+		return nil, err
+	}
+
+	return &SearchCourseResult{Course: crs}, nil
+}
