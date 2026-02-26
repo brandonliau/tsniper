@@ -7,7 +7,6 @@ import (
 	"tsniper/internal/interfaces/discord/interaction"
 
 	"tsniper/pkg/logger"
-	"tsniper/pkg/utils"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -39,12 +38,18 @@ func (g *gateway) Start() {
 	if err != nil {
 		g.logger.Fatal("Failed to start discord gateway: %v", err)
 	}
-	var users []string
+
+	userSet := make(map[string]struct{}, len(res.Users))
 	for _, usr := range res.Users {
-		users = append(users, usr.ID)
+		userSet[usr.ID] = struct{}{}
 	}
 
-	var members []string
+	roleToCampus := make(map[string]string)
+	for campus, roleID := range g.cfg.Roles {
+		roleToCampus[roleID] = campus
+	}
+
+	memberRoles := make(map[string][]string)
 	var lastUserID string
 	for {
 		gm, _ := g.session.GuildMembers(g.guildID, lastUserID, 1000)
@@ -52,48 +57,39 @@ func (g *gateway) Start() {
 			break
 		}
 		for _, member := range gm {
-			members = append(members, member.User.ID)
+			memberRoles[member.User.ID] = member.Roles
 		}
 		lastUserID = gm[len(gm)-1].User.ID
 	}
 
-	for _, userID := range utils.Difference(members, users) {
-		_, err := g.userService.Join(usecase.UserJoinRequest{UserID: userID})
-		if err != nil {
-			g.logger.Warn("Failed to add user %s: %v", userID, err)
-			continue
+	for userID, roles := range memberRoles {
+		if _, exists := userSet[userID]; !exists {
+			if _, err := g.userService.Join(usecase.UserJoinRequest{UserID: userID}); err != nil {
+				g.logger.Warn("Failed to add user %s: %v", userID, err)
+				continue
+			}
 		}
 
-		member, err := g.session.GuildMember(g.guildID, userID)
-		if err != nil {
-			g.logger.Warn("Failed to get member %s: %v", userID, err)
-			continue
-		}
-
-		for _, roleID := range member.Roles {
-			roleName, ok := g.cfg.Roles[roleID]
+		for _, roleID := range roles {
+			campus, ok := roleToCampus[roleID]
 			if !ok {
 				continue
 			}
 
-			req := usecase.SetUserCampusRequest{
+			if _, err := g.userService.SetUserCampus(usecase.SetUserCampusRequest{
 				UserID: userID,
-				Campus: roleName,
-			}
-
-			_, err := g.userService.SetUserCampus(req)
-			if err != nil {
-				g.logger.Warn("Failed to set user campus %s to %s: %v", userID, roleName, err)
-				continue
+				Campus: campus,
+			}); err != nil {
+				g.logger.Warn("Failed to set user campus %s to %s: %v", userID, campus, err)
 			}
 		}
+
+		delete(userSet, userID)
 	}
 
-	for _, userID := range utils.Difference(users, members) {
-		_, err := g.userService.Leave(usecase.UserLeaveRequest{UserID: userID})
-		if err != nil {
+	for userID := range userSet {
+		if _, err := g.userService.Leave(usecase.UserLeaveRequest{UserID: userID}); err != nil {
 			g.logger.Warn("Failed to remove user %s: %v", userID, err)
-			continue
 		}
 	}
 
@@ -110,11 +106,11 @@ func (g *gateway) RegisterCommand(def *discordgo.ApplicationCommand, handleFunc 
 		return
 	}
 
-	// _, err := g.session.ApplicationCommandCreate(g.applicationID, "", def)
-	// if err != nil {
-	// 	g.logger.Error("Failed to register command %s: %v", def.Name, err)
-	// 	return
-	// }
+	_, err := g.session.ApplicationCommandCreate(g.applicationID, "", def)
+	if err != nil {
+		g.logger.Error("Failed to register command %s: %v", def.Name, err)
+		return
+	}
 
 	g.handleFuncs[def.Name] = handleFunc
 	g.logger.Info("Registered command %s", def.Name)

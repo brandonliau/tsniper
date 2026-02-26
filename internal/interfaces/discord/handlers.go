@@ -33,6 +33,7 @@ func (g *gateway) InteractionHandler(s *discordgo.Session, i *discordgo.Interact
 		g.logger.Error("Failed to execute %s interaction handler: %v", routingKey, err)
 		rsp = interaction.InteractionInitialResponse(
 			interaction.WithContent("Something went wrong!"),
+			interaction.WithEphemeral(),
 		)
 	}
 

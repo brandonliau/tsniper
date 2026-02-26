@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"tsniper/internal/application/usecase"
-	"tsniper/internal/config"
 	"tsniper/internal/domain/course"
 	"tsniper/internal/interfaces/discord/interaction"
 	"tsniper/internal/interfaces/discord/presentation"
@@ -15,8 +14,7 @@ import (
 )
 
 type checkCommand struct {
-	snipeService  *usecase.SnipeService
-	customization *config.CustomizationConfig
+	snipeService *usecase.SnipeService
 }
 
 func CheckCommandDefinition() *discordgo.ApplicationCommand {
@@ -26,10 +24,9 @@ func CheckCommandDefinition() *discordgo.ApplicationCommand {
 	}
 }
 
-func CheckCommandHandler(snipeService *usecase.SnipeService, customization *config.CustomizationConfig) interaction.HandleFunc {
+func CheckCommandHandler(snipeService *usecase.SnipeService) interaction.HandleFunc {
 	c := &checkCommand{
-		snipeService:  snipeService,
-		customization: customization,
+		snipeService: snipeService,
 	}
 	return c.execute
 }
@@ -53,24 +50,30 @@ func (c *checkCommand) execute(s *discordgo.Session, i *discordgo.InteractionCre
 	}
 
 	rsp := interaction.InteractionInitialResponse(
-		interaction.WithEmbeds(c.successfulCheck(res.Courses)),
+		interaction.WithEmbeds(c.successfulCheck(res.Courses, res.Counts)),
 		interaction.WithEphemeral(),
 	)
 	return rsp, nil
 }
 
-func (c *checkCommand) successfulCheck(courses []*course.Course) *discordgo.MessageEmbed {
+func (c *checkCommand) successfulCheck(courses []*course.Course, counts map[*course.Course]int) *discordgo.MessageEmbed {
 	var builder strings.Builder
 	for _, crs := range courses {
-		fmt.Fprintf(&builder, "`%s` - %s (**Section %s**)\n", crs.Index, crs.Title, crs.Section)
+		fmt.Fprintf(
+			&builder,
+			"%s `%s` - %s (**Section %s**) | :eyes: `%d` | %s",
+			presentation.EmojiMap[crs.Scope.Term.DisplayName()],
+			crs.Index,
+			crs.Title,
+			crs.Section,
+			counts[crs],
+			presentation.LastOpenDisplayString(crs.LastOpen),
+		)
 	}
 	return &discordgo.MessageEmbed{
 		Title:       "Active Requests",
 		Description: builder.String(),
 		Color:       presentation.Blue,
-		Thumbnail: &discordgo.MessageEmbedThumbnail{
-			URL: c.customization.Thumbnail,
-		},
 		Footer: &discordgo.MessageEmbedFooter{
 			Text: time.Now().Format("01/02/2006 03:04:05 PM"),
 		},
@@ -82,9 +85,6 @@ func (c *checkCommand) invalidCheck() *discordgo.MessageEmbed {
 		Title:       "Invalid Request!",
 		Description: "You have no active snipe requests.",
 		Color:       presentation.Red,
-		Thumbnail: &discordgo.MessageEmbedThumbnail{
-			URL: c.customization.Thumbnail,
-		},
 		Footer: &discordgo.MessageEmbedFooter{
 			Text: time.Now().Format("01/02/2006 03:04:05 PM"),
 		},

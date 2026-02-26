@@ -28,7 +28,7 @@ import (
 
 func main() {
 	// Create logger
-	logger := logger.NewStdLogger(logger.LevelDebug)
+	logger := logger.NewStdLogger(logger.LevelInfo)
 
 	// Create config
 	cfg, err := config.NewYamlConfig("./config/config.yml")
@@ -77,7 +77,7 @@ func main() {
 
 	// Create application usescases
 	snipeService := usecase.NewSnipeService(activeScope, snipeCache, snipeRepository, courseRepository, userRepository)
-	courseService := usecase.NewCourseService(activeScope, userRepository, courseRepository)
+	courseService := usecase.NewCourseService(activeScope, snipeRepository, userRepository, courseRepository)
 	userService := usecase.NewUserService(snipeCache, snipeRepository, userRepository)
 	systemService := usecase.NewSystemService(systemMonitor)
 
@@ -91,7 +91,7 @@ func main() {
 	discordGateway.RegisterCommand(command.AddCommandDefinition(activeScope), command.AddCommandHandler(snipeService, cfg.Customization))
 	discordGateway.RegisterCommand(command.RemoveCommandDefinition(activeScope), command.RemoveCommandHandler(snipeService, cfg.Customization))
 	discordGateway.RegisterCommand(command.ClearCommandDefinition(), command.ClearCommandHandler(snipeService, cfg.Customization))
-	discordGateway.RegisterCommand(command.CheckCommandDefinition(), command.CheckCommandHandler(snipeService, cfg.Customization))
+	discordGateway.RegisterCommand(command.CheckCommandDefinition(), command.CheckCommandHandler(snipeService))
 	discordGateway.RegisterCommand(command.SearchCommandDefinition(activeScope), command.SearchCommandHandler(courseService, cfg.Customization))
 	discordGateway.RegisterCommand(command.StatusCommandDefinition(), command.StatusCommandHandler(systemService, cfg.Customization))
 	discordGateway.RegisterCommand(command.HelpCommandDefinition(), command.HelpCommandHandler(cfg.Discord.ApplicationID, cfg.Customization))
@@ -155,9 +155,9 @@ func main() {
 	openCourseNotifier.Stop()
 
 	// Remove application commands
-	// _, err = s.ApplicationCommandBulkOverwrite(s.State.User.ID, "", nil)
-	// if err != nil {
-	// 	logger.Error("Failed to delete application commands")
-	// }
+	_, err = s.ApplicationCommandBulkOverwrite(s.State.User.ID, "", nil)
+	if err != nil {
+		logger.Error("Failed to delete application commands")
+	}
 	logger.Info("Bot shut down")
 }

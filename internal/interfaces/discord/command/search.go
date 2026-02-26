@@ -22,22 +22,25 @@ type searchCommand struct {
 }
 
 func SearchCommandDefinition(activeScope ...scope.ActiveScope) *discordgo.ApplicationCommand {
-	seasonChoices := make([]*discordgo.ApplicationCommandOptionChoice, 0, len(activeScope[0].Seasons()))
-	for _, szn := range activeScope[0].Seasons() {
-		choice := &discordgo.ApplicationCommandOptionChoice{
-			Name:  szn.DisplayName(),
-			Value: szn.DisplayName(),
-		}
-		seasonChoices = append(seasonChoices, choice)
-	}
+	var seasonChoices []*discordgo.ApplicationCommandOptionChoice
+	var campusChoices []*discordgo.ApplicationCommandOptionChoice
 
-	campusChoices := make([]*discordgo.ApplicationCommandOptionChoice, 0, len(activeScope[0].Campuses()))
-	for _, cmp := range activeScope[0].Campuses() {
-		choice := &discordgo.ApplicationCommandOptionChoice{
-			Name:  cmp.DisplayName(),
-			Value: cmp.DisplayName(),
+	if len(activeScope) > 0 {
+		seasonChoices = make([]*discordgo.ApplicationCommandOptionChoice, 0, len(activeScope[0].Seasons()))
+		for _, szn := range activeScope[0].Seasons() {
+			seasonChoices = append(seasonChoices, &discordgo.ApplicationCommandOptionChoice{
+				Name:  szn.DisplayName(),
+				Value: szn.DisplayName(),
+			})
 		}
-		campusChoices = append(campusChoices, choice)
+
+		campusChoices = make([]*discordgo.ApplicationCommandOptionChoice, 0, len(activeScope[0].Campuses()))
+		for _, cmp := range activeScope[0].Campuses() {
+			campusChoices = append(campusChoices, &discordgo.ApplicationCommandOptionChoice{
+				Name:  cmp.DisplayName(),
+				Value: cmp.DisplayName(),
+			})
+		}
 	}
 
 	return &discordgo.ApplicationCommand{
@@ -55,9 +58,16 @@ func SearchCommandDefinition(activeScope ...scope.ActiveScope) *discordgo.Applic
 			{
 				Type:        discordgo.ApplicationCommandOptionString,
 				Name:        "season",
-				Description: "Season of course to search. If not provided, the default season will be used.",
+				Description: "Season of course to add. If not provided, the default season will be used.",
 				Required:    false,
 				Choices:     seasonChoices,
+			},
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "campus",
+				Description: "Campus of course to add. If not provided, the default campus will be used.",
+				Required:    false,
+				Choices:     campusChoices,
 			},
 		},
 	}
@@ -72,12 +82,18 @@ func SearchCommandHandler(courseService *usecase.CourseService, customization *c
 }
 
 func (c *searchCommand) execute(s *discordgo.Session, i *discordgo.InteractionCreate) (*discordgo.InteractionResponse, error) {
+	options := interaction.ParseInteractionOptions(i)
 	req := usecase.SearchCourseRequest{
-		Index: i.ApplicationCommandData().Options[0].StringValue(),
+		UserID: interaction.GetUserID(i),
+		Index:  options["index"].StringValue(),
 	}
 
-	if len(i.ApplicationCommandData().Options) > 1 {
-		req.Season = utils.Ptr(i.ApplicationCommandData().Options[1].StringValue())
+	if opt, ok := options["season"]; ok {
+		req.Season = utils.Ptr(opt.StringValue())
+	}
+
+	if opt, ok := options["campus"]; ok {
+		req.Campus = utils.Ptr(opt.StringValue())
 	}
 
 	var rsp *discordgo.InteractionResponse
@@ -85,7 +101,7 @@ func (c *searchCommand) execute(s *discordgo.Session, i *discordgo.InteractionCr
 	switch err {
 	case nil:
 		rsp = interaction.InteractionInitialResponse(
-			interaction.WithEmbeds(c.successfulSearch(res.Course)),
+			interaction.WithEmbeds(c.successfulSearch(res.Course, res.Count)),
 			interaction.WithEphemeral(),
 		)
 	case scope.ErrScopeInvalid, course.ErrCourseNotFound:
@@ -100,42 +116,52 @@ func (c *searchCommand) execute(s *discordgo.Session, i *discordgo.InteractionCr
 	return rsp, nil
 }
 
-func (c *searchCommand) successfulSearch(course *course.Course) *discordgo.MessageEmbed {
+func (c *searchCommand) successfulSearch(crs *course.Course, count int) *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
-		Title: fmt.Sprintf("%s (`%s`)", course.Title, course.CourseString),
-		Color: presentation.Blue,
+		Title: fmt.Sprintf("%s (`%s`)", crs.Title, crs.CourseString),
 		Fields: []*discordgo.MessageEmbedField{
 			{
 				Name:   ":alarm_clock: Section Meeting Times",
-				Value:  fmt.Sprintf(">>> %s", course.Meeting),
+				Value:  fmt.Sprintf(">>> %s", crs.Meeting),
 				Inline: false,
 			},
 			{
 				Name:   "Course Name",
-				Value:  fmt.Sprintf("`%s`", course.Title),
+				Value:  fmt.Sprintf("`%s`", crs.Title),
 				Inline: true,
 			},
 			{
 				Name:   "Index",
-				Value:  fmt.Sprintf("`%s`", course.Index),
+				Value:  fmt.Sprintf("`%s`", crs.Index),
 				Inline: true,
 			},
 			{
 				Name:   "Section",
-				Value:  fmt.Sprintf("`%s`", course.Section),
+				Value:  fmt.Sprintf("`%s`", crs.Section),
 				Inline: true,
 			},
 			{
 				Name:   "Instructors",
-				Value:  fmt.Sprintf("```fix\n%s```", course.Instructors),
+				Value:  fmt.Sprintf("```fix\n%s```", crs.Instructors),
 				Inline: false,
 			},
 			{
 				Name:   "Special Notes",
-				Value:  fmt.Sprintf("```fix\n%s```", course.Notes),
+				Value:  fmt.Sprintf("```fix\n%s```", crs.Notes),
 				Inline: false,
 			},
+			{
+				Name:   "Insights",
+				Value:  fmt.Sprintf("👀`%d`", count),
+				Inline: true,
+			},
+			{
+				Name:   "Last Open",
+				Value:  presentation.LastOpenDisplayString(crs.LastOpen),
+				Inline: true,
+			},
 		},
+		Color: presentation.Blue,
 		Thumbnail: &discordgo.MessageEmbedThumbnail{
 			URL: c.customization.Thumbnail,
 		},

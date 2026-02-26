@@ -15,7 +15,7 @@ import (
 
 var _ ports.SectionsFeed = (*sectionsFeed)(nil)
 
-const sectionsURL = "https://sis.rutgers.edu/soc/api/openSections.json"
+const sectionsURL = "https://classes.rutgers.edu//soc/api/openSections.json"
 
 type sectionsFeed struct {
 	client httpx.Client

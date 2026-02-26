@@ -23,22 +23,25 @@ type addCommand struct {
 }
 
 func AddCommandDefinition(activeScope ...scope.ActiveScope) *discordgo.ApplicationCommand {
-	seasonChoices := make([]*discordgo.ApplicationCommandOptionChoice, 0, len(activeScope[0].Seasons()))
-	for _, szn := range activeScope[0].Seasons() {
-		choice := &discordgo.ApplicationCommandOptionChoice{
-			Name:  szn.DisplayName(),
-			Value: szn.DisplayName(),
-		}
-		seasonChoices = append(seasonChoices, choice)
-	}
+	var seasonChoices []*discordgo.ApplicationCommandOptionChoice
+	var campusChoices []*discordgo.ApplicationCommandOptionChoice
 
-	campusChoices := make([]*discordgo.ApplicationCommandOptionChoice, 0, len(activeScope[0].Campuses()))
-	for _, cmp := range activeScope[0].Campuses() {
-		choice := &discordgo.ApplicationCommandOptionChoice{
-			Name:  cmp.DisplayName(),
-			Value: cmp.DisplayName(),
+	if len(activeScope) > 0 {
+		seasonChoices = make([]*discordgo.ApplicationCommandOptionChoice, 0, len(activeScope[0].Seasons()))
+		for _, szn := range activeScope[0].Seasons() {
+			seasonChoices = append(seasonChoices, &discordgo.ApplicationCommandOptionChoice{
+				Name:  szn.DisplayName(),
+				Value: szn.DisplayName(),
+			})
 		}
-		campusChoices = append(campusChoices, choice)
+
+		campusChoices = make([]*discordgo.ApplicationCommandOptionChoice, 0, len(activeScope[0].Campuses()))
+		for _, cmp := range activeScope[0].Campuses() {
+			campusChoices = append(campusChoices, &discordgo.ApplicationCommandOptionChoice{
+				Name:  cmp.DisplayName(),
+				Value: cmp.DisplayName(),
+			})
+		}
 	}
 
 	return &discordgo.ApplicationCommand{
@@ -80,13 +83,18 @@ func AddCommandHandler(snipeService *usecase.SnipeService, customization *config
 }
 
 func (c *addCommand) execute(s *discordgo.Session, i *discordgo.InteractionCreate) (*discordgo.InteractionResponse, error) {
+	options := interaction.ParseInteractionOptions(i)
 	req := usecase.AddSnipeRequest{
 		UserID: interaction.GetUserID(i),
-		Index:  i.ApplicationCommandData().Options[0].StringValue(),
+		Index:  options["index"].StringValue(),
 	}
 
-	if len(i.ApplicationCommandData().Options) > 1 {
-		req.Season = utils.Ptr(i.ApplicationCommandData().Options[1].StringValue())
+	if opt, ok := options["season"]; ok {
+		req.Season = utils.Ptr(opt.StringValue())
+	}
+
+	if opt, ok := options["campus"]; ok {
+		req.Campus = utils.Ptr(opt.StringValue())
 	}
 
 	var rsp *discordgo.InteractionResponse

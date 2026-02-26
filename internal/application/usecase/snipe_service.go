@@ -216,6 +216,7 @@ type CheckSnipeRequest struct {
 
 type CheckSnipeResult struct {
 	Courses []*course.Course
+	Counts  map[*course.Course]int
 }
 
 func (s *SnipeService) Check(req CheckSnipeRequest) (*CheckSnipeResult, error) {
@@ -225,13 +226,21 @@ func (s *SnipeService) Check(req CheckSnipeRequest) (*CheckSnipeResult, error) {
 	}
 
 	var courses []*course.Course
+	counts := make(map[*course.Course]int)
 	for _, snp := range snipes {
 		crs, err := s.courseRepository.Get(snp.Index, snp.Scope)
 		if err != nil {
 			return nil, err
 		}
 		courses = append(courses, crs)
+
+		snipes, err := s.snipeRepository.GetByIndex(snp.Index, snp.Scope)
+		if err != nil {
+			return nil, err
+		}
+
+		counts[crs] = len(snipes)
 	}
 
-	return &CheckSnipeResult{Courses: courses}, nil
+	return &CheckSnipeResult{Courses: courses, Counts: counts}, nil
 }

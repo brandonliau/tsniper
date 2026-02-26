@@ -43,14 +43,8 @@ func (r *CourseRepositoryImpl) Create(crs *course.Course) error {
 func (r *CourseRepositoryImpl) Save(crs *course.Course) error {
 	return r.db.Exec(
 		`UPDATE courses
-		 SET course_string = ?, section = ?, title = ?, instructors = ?, notes = ?, meeting = ?, last_open = ?
+		 SET last_open = ?
 		 WHERE course_index = ? AND campus = ? AND term = ? AND year = ?`,
-		crs.CourseString,
-		crs.Section,
-		crs.Title,
-		crs.Instructors,
-		crs.Notes,
-		crs.Meeting,
 		crs.LastOpen,
 		crs.Index,
 		crs.Scope.Campus,

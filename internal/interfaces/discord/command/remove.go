@@ -23,22 +23,25 @@ type removeCommand struct {
 }
 
 func RemoveCommandDefinition(activeScope ...scope.ActiveScope) *discordgo.ApplicationCommand {
-	seasonChoices := make([]*discordgo.ApplicationCommandOptionChoice, 0, len(activeScope[0].Seasons()))
-	for _, szn := range activeScope[0].Seasons() {
-		choice := &discordgo.ApplicationCommandOptionChoice{
-			Name:  szn.DisplayName(),
-			Value: szn.DisplayName(),
-		}
-		seasonChoices = append(seasonChoices, choice)
-	}
+	var seasonChoices []*discordgo.ApplicationCommandOptionChoice
+	var campusChoices []*discordgo.ApplicationCommandOptionChoice
 
-	campusChoices := make([]*discordgo.ApplicationCommandOptionChoice, 0, len(activeScope[0].Campuses()))
-	for _, cmp := range activeScope[0].Campuses() {
-		choice := &discordgo.ApplicationCommandOptionChoice{
-			Name:  cmp.DisplayName(),
-			Value: cmp.DisplayName(),
+	if len(activeScope) > 0 {
+		seasonChoices = make([]*discordgo.ApplicationCommandOptionChoice, 0, len(activeScope[0].Seasons()))
+		for _, szn := range activeScope[0].Seasons() {
+			seasonChoices = append(seasonChoices, &discordgo.ApplicationCommandOptionChoice{
+				Name:  szn.DisplayName(),
+				Value: szn.DisplayName(),
+			})
 		}
-		campusChoices = append(campusChoices, choice)
+
+		campusChoices = make([]*discordgo.ApplicationCommandOptionChoice, 0, len(activeScope[0].Campuses()))
+		for _, cmp := range activeScope[0].Campuses() {
+			campusChoices = append(campusChoices, &discordgo.ApplicationCommandOptionChoice{
+				Name:  cmp.DisplayName(),
+				Value: cmp.DisplayName(),
+			})
+		}
 	}
 
 	return &discordgo.ApplicationCommand{
@@ -56,9 +59,16 @@ func RemoveCommandDefinition(activeScope ...scope.ActiveScope) *discordgo.Applic
 			{
 				Type:        discordgo.ApplicationCommandOptionString,
 				Name:        "season",
-				Description: "Season of course to remove. If not provided, the default season will be used.",
+				Description: "Season of course to add. If not provided, the default season will be used.",
 				Required:    false,
 				Choices:     seasonChoices,
+			},
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "campus",
+				Description: "Campus of course to add. If not provided, the default campus will be used.",
+				Required:    false,
+				Choices:     campusChoices,
 			},
 		},
 	}
@@ -73,13 +83,18 @@ func RemoveCommandHandler(snipeService *usecase.SnipeService, customization *con
 }
 
 func (c *removeCommand) execute(s *discordgo.Session, i *discordgo.InteractionCreate) (*discordgo.InteractionResponse, error) {
+	options := interaction.ParseInteractionOptions(i)
 	req := usecase.RemoveSnipeRequest{
 		UserID: interaction.GetUserID(i),
-		Index:  i.ApplicationCommandData().Options[0].StringValue(),
+		Index:  options["index"].StringValue(),
 	}
 
-	if len(i.ApplicationCommandData().Options) > 1 {
-		req.Season = utils.Ptr(i.ApplicationCommandData().Options[1].StringValue())
+	if opt, ok := options["season"]; ok {
+		req.Season = utils.Ptr(opt.StringValue())
+	}
+
+	if opt, ok := options["campus"]; ok {
+		req.Campus = utils.Ptr(opt.StringValue())
 	}
 
 	var rsp *discordgo.InteractionResponse

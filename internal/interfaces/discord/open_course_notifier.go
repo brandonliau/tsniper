@@ -95,6 +95,8 @@ func (n *openCourseNotifier) execute(e event.CourseOpen) error {
 			n.logger.Error("Failed to send message to user %s: %v", userID, err)
 			continue
 		}
+
+		n.logger.Info("Notified user %s that %s is open", userID, e.Course.Index)
 	}
 
 	return nil

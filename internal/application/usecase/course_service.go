@@ -3,18 +3,21 @@ package usecase
 import (
 	"tsniper/internal/domain/course"
 	"tsniper/internal/domain/scope"
+	"tsniper/internal/domain/snipe"
 	"tsniper/internal/domain/user"
 )
 
 type CourseService struct {
 	activeScope      scope.ActiveScope
+	snipeRepository  snipe.SnipeRepository
 	userRepository   user.UserRepository
 	courseRepository course.CourseRepository
 }
 
-func NewCourseService(activeScope scope.ActiveScope, userRepository user.UserRepository, courseRepository course.CourseRepository) *CourseService {
+func NewCourseService(activeScope scope.ActiveScope, snipeRepository snipe.SnipeRepository, userRepository user.UserRepository, courseRepository course.CourseRepository) *CourseService {
 	return &CourseService{
 		activeScope:      activeScope,
+		snipeRepository:  snipeRepository,
 		userRepository:   userRepository,
 		courseRepository: courseRepository,
 	}
@@ -30,6 +33,7 @@ type SearchCourseRequest struct {
 
 type SearchCourseResult struct {
 	Course *course.Course
+	Count  int
 }
 
 func (s *CourseService) Search(req SearchCourseRequest) (*SearchCourseResult, error) {
@@ -68,5 +72,10 @@ func (s *CourseService) Search(req SearchCourseRequest) (*SearchCourseResult, er
 		return nil, err
 	}
 
-	return &SearchCourseResult{Course: crs}, nil
+	snipes, err := s.snipeRepository.GetByIndex(req.Index, scp)
+	if err != nil {
+		return nil, err
+	}
+
+	return &SearchCourseResult{Course: crs, Count: len(snipes)}, nil
 }

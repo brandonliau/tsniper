@@ -77,36 +77,17 @@ func (s *snipeMonitor) Stop() error {
 }
 
 func (s *snipeMonitor) monitorSnipes(ch <-chan time.Time, scp scope.AcademicScope) {
-	var previous []string
+	previous, _ := s.sectionsFeed.FetchOpenSections(scp)
+
 	for range ch {
 		feed, err := s.sectionsFeed.FetchOpenSections(scp)
 		if err != nil {
+			// todo: remove this error message
+			s.logger.Error("Failed to fetch open sections: %v", err)
 			continue
 		}
 
-		for _, index := range utils.Difference(feed, previous) {
-			crs, err := s.courseRepository.Get(index, scp)
-			if err != nil {
-				continue
-			}
-			if crs.LastOpen != 0 {
-				crs.Open()
-				s.courseRepository.Save(crs)
-			}
-		}
-
-		for _, index := range utils.Difference(previous, feed) {
-			crs, err := s.courseRepository.Get(index, scp)
-			if err != nil {
-				continue
-			}
-			crs.Close()
-			s.courseRepository.Save(crs)
-		}
-		previous = feed
-
-		openSections := utils.Intersection(feed, s.snipeCache.Tracked(scp))
-		for _, index := range openSections {
+		for _, index := range utils.Intersection(feed, s.snipeCache.Tracked(scp)) {
 			crs, err := s.courseRepository.Get(index, scp)
 			if err != nil {
 				s.logger.Error("Failed to get course: %v", err)
@@ -121,6 +102,32 @@ func (s *snipeMonitor) monitorSnipes(ch <-chan time.Time, scp scope.AcademicScop
 
 			s.handleSnipes(snipes, crs)
 		}
+
+		for _, index := range utils.Difference(feed, previous) {
+			crs, err := s.courseRepository.Get(index, scp)
+			if err != nil {
+				continue
+			}
+			if crs.LastOpen != 0 {
+				crs.Open()
+				if err := s.courseRepository.Save(crs); err != nil {
+					s.logger.Error("Failed to save course: %v", err)
+				}
+			}
+		}
+
+		for _, index := range utils.Difference(previous, feed) {
+			crs, err := s.courseRepository.Get(index, scp)
+			if err != nil {
+				continue
+			}
+			crs.Close()
+			if err := s.courseRepository.Save(crs); err != nil {
+				s.logger.Error("Failed to save course: %v", err)
+			}
+		}
+
+		previous = feed
 	}
 }
 
