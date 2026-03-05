@@ -1,14 +1,14 @@
 package command
 
 import (
-	"fmt"
-	"strings"
-	"time"
+	"sort"
 
 	"tsniper/internal/application/usecase"
-	"tsniper/internal/domain/course"
+	"tsniper/internal/interfaces/discord/component"
 	"tsniper/internal/interfaces/discord/interaction"
 	"tsniper/internal/interfaces/discord/presentation"
+
+	"tsniper/pkg/utils"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -43,50 +43,59 @@ func (c *checkCommand) execute(s *discordgo.Session, i *discordgo.InteractionCre
 
 	if len(res.Courses) == 0 {
 		rsp := interaction.InteractionInitialResponse(
-			interaction.WithEmbeds(c.invalidCheck()),
+			interaction.WithEmbeds(presentation.InvalidCheck()),
 			interaction.WithEphemeral(),
 		)
 		return rsp, nil
 	}
 
+	sort.SliceStable(res.Courses, func(i, j int) bool {
+		a, b := res.Courses[i], res.Courses[j]
+		if a.Scope.Campus != b.Scope.Campus {
+			return a.Scope.Campus < b.Scope.Campus
+		}
+		if a.Scope.Term != b.Scope.Term {
+			return a.Scope.Term < b.Scope.Term
+		}
+		if a.Scope.Year != b.Scope.Year {
+			return a.Scope.Year < b.Scope.Year
+		}
+		return a.Index < b.Index
+	})
+
+	if len(res.Courses) <= presentation.MaxCoursesPerPage {
+		rsp := interaction.InteractionInitialResponse(
+			interaction.WithEmbeds(presentation.SuccessfulCheck(res.Courses, res.Counts)),
+			interaction.WithEphemeral(),
+		)
+		return rsp, nil
+	}
+
+	endIndex := min(presentation.MaxCoursesPerPage, len(res.Courses))
+	page := res.Courses[:endIndex]
+
+	last := page[len(page)-1]
+	nextBtn := component.NextComponentDefinition(
+		utils.KeyValue[string, string]{Key: "campus", Value: string(last.Scope.Campus)},
+		utils.KeyValue[string, string]{Key: "term", Value: string(last.Scope.Term)},
+		utils.KeyValue[string, string]{Key: "year", Value: last.Scope.Year},
+		utils.KeyValue[string, string]{Key: "index", Value: last.Index},
+	)
+
+	previousBtn := component.PreviousComponentDefinition()
+	previousBtn.Disabled = true
+
+	totalPages := (len(res.Courses) + presentation.MaxCoursesPerPage - 1) / presentation.MaxCoursesPerPage
+	pageBtn := component.PageComponentDefinition(1, totalPages)
+
 	rsp := interaction.InteractionInitialResponse(
-		interaction.WithEmbeds(c.successfulCheck(res.Courses, res.Counts)),
+		interaction.WithEmbeds(presentation.SuccessfulCheck(page, res.Counts)),
+		interaction.WithComponents(
+			previousBtn,
+			pageBtn,
+			nextBtn,
+		),
 		interaction.WithEphemeral(),
 	)
 	return rsp, nil
-}
-
-func (c *checkCommand) successfulCheck(courses []*course.Course, counts map[*course.Course]int) *discordgo.MessageEmbed {
-	var builder strings.Builder
-	for _, crs := range courses {
-		fmt.Fprintf(
-			&builder,
-			"%s `%s` - %s (**Section %s**) | :eyes: `%d` | %s",
-			presentation.EmojiMap[crs.Scope.Term.DisplayName()],
-			crs.Index,
-			crs.Title,
-			crs.Section,
-			counts[crs],
-			presentation.LastOpenDisplayString(crs.LastOpen),
-		)
-	}
-	return &discordgo.MessageEmbed{
-		Title:       "Active Requests",
-		Description: builder.String(),
-		Color:       presentation.Blue,
-		Footer: &discordgo.MessageEmbedFooter{
-			Text: time.Now().Format("01/02/2006 03:04:05 PM"),
-		},
-	}
-}
-
-func (c *checkCommand) invalidCheck() *discordgo.MessageEmbed {
-	return &discordgo.MessageEmbed{
-		Title:       "Invalid Request!",
-		Description: "You have no active snipe requests.",
-		Color:       presentation.Red,
-		Footer: &discordgo.MessageEmbedFooter{
-			Text: time.Now().Format("01/02/2006 03:04:05 PM"),
-		},
-	}
 }

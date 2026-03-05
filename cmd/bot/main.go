@@ -28,7 +28,8 @@ import (
 
 func main() {
 	// Create logger
-	logger := logger.NewStdLogger(logger.LevelInfo)
+	logger := logger.NewStdLogger(logger.LevelDebug)
+	// logger := logger.NewStdLogger(logger.LevelInfo)
 
 	// Create config
 	cfg, err := config.NewYamlConfig("./config/config.yml")
@@ -98,6 +99,8 @@ func main() {
 
 	// Register application components
 	discordGateway.RegisterComponent(component.ResnipeComponentDefinition(), component.ResnipeComponentHandler(snipeService))
+	discordGateway.RegisterComponent(component.NextComponentDefinition(), component.NextComponentHandler(snipeService))
+	discordGateway.RegisterComponent(component.PreviousComponentDefinition(), component.PreviousComponentHandler(snipeService))
 
 	// Register application services
 	orchestrator := worker.NewOrchestrator(logger)

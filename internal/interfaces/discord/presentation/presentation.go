@@ -10,6 +10,10 @@ const (
 	Red   = 0xe74d3b
 )
 
+const (
+	MaxCoursesPerPage = 30
+)
+
 var EmojiMap = map[string]string{
 	"spring": ":herb:",
 	"summer": ":sunny:",
