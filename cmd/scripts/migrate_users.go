@@ -13,7 +13,7 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-func migrate() {
+func migrateUsers() {
 	logger := logger.NewStdLogger(logger.LevelInfo)
 
 	cfg, err := config.NewYamlConfig("./config/config.yml")

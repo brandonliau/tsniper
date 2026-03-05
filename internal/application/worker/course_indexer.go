@@ -31,13 +31,17 @@ func NewCourseIndexer(activeScope scope.ActiveScope, courseFeed ports.CourseFeed
 }
 
 func (s *courseIndexer) Start() error {
+	if err := s.pruneCourses(); err != nil {
+		return err
+	}
+
 	s.indexCourses()
 
-	_, err := s.cron.AddFunc("0 7 * * *", s.indexCourses)
+	_, err := s.cron.AddFunc("0 1 * * *", s.indexCourses)
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("0 19 * * *", s.indexCourses)
+	_, err = s.cron.AddFunc("0 13 * * *", s.indexCourses)
 	if err != nil {
 		return err
 	}
@@ -68,4 +72,26 @@ func (s *courseIndexer) indexCourses() {
 
 		s.logger.Info("Indexed %d courses in %v", len(courses), time.Since(start))
 	}
+}
+
+func (s *courseIndexer) pruneCourses() error {
+	start := time.Now()
+
+	courses, err := s.courseRepository.GetAll()
+	if err != nil {
+		return err
+	}
+
+	var cleared int
+	for _, crs := range courses {
+		if s.activeScope.Validate(crs.Scope) != nil {
+			if err := s.courseRepository.Delete(crs); err != nil {
+				return err
+			}
+			cleared++
+		}
+	}
+
+	s.logger.Info("Pruned %d stale courses in %v", cleared, time.Since(start))
+	return nil
 }
