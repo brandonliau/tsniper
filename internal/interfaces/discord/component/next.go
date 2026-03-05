@@ -19,7 +19,7 @@ type nextComponent struct {
 func NextComponentDefinition(data ...utils.KeyValue[string, string]) discordgo.Button {
 	return discordgo.Button{
 		CustomID: interaction.EncodeCustomID("next", data...),
-		Label:    "Next",
+		Label:    "➡️",
 		Style:    discordgo.PrimaryButton,
 	}
 }
@@ -56,6 +56,20 @@ func (c *nextComponent) execute(s *discordgo.Session, i *discordgo.InteractionCr
 		return a.Index < b.Index
 	})
 
+	if len(res.Courses) <= presentation.MaxCoursesPerPage {
+		var embed *discordgo.MessageEmbed
+		if len(res.Courses) == 0 {
+			embed = presentation.InvalidCheck()
+		} else {
+			embed = presentation.SuccessfulCheck(res.Courses, res.Counts)
+		}
+		rsp := interaction.InteractionUpdateResponse(
+			interaction.WithEmbeds(embed),
+		)
+		rsp.Data.Components = []discordgo.MessageComponent{}
+		return rsp, nil
+	}
+
 	startIdx := len(res.Courses)
 	for idx, crs := range res.Courses {
 		key := string(crs.Scope.Campus) + string(crs.Scope.Term) + crs.Scope.Year + crs.Index
@@ -69,13 +83,6 @@ func (c *nextComponent) execute(s *discordgo.Session, i *discordgo.InteractionCr
 	page := res.Courses[startIdx:endIdx]
 
 	if len(page) == 0 {
-		if len(res.Courses) == 0 {
-			rsp := interaction.InteractionUpdateResponse(
-				interaction.WithEmbeds(presentation.InvalidCheck()),
-			)
-			return rsp, nil
-		}
-
 		endIdx = len(res.Courses)
 		startIdx = max(0, endIdx-presentation.MaxCoursesPerPage)
 		page = res.Courses[startIdx:endIdx]

@@ -28,8 +28,7 @@ import (
 
 func main() {
 	// Create logger
-	logger := logger.NewStdLogger(logger.LevelDebug)
-	// logger := logger.NewStdLogger(logger.LevelInfo)
+	logger := logger.NewStdLogger(logger.LevelInfo)
 
 	// Create config
 	cfg, err := config.NewYamlConfig("./config/config.yml")

@@ -82,8 +82,6 @@ func (s *snipeMonitor) monitorSnipes(ch <-chan time.Time, scp scope.AcademicScop
 	for range ch {
 		feed, err := s.sectionsFeed.FetchOpenSections(scp)
 		if err != nil {
-			// todo: remove this error message
-			s.logger.Error("Failed to fetch open sections: %v", err)
 			continue
 		}
 

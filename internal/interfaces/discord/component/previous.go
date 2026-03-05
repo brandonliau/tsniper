@@ -19,7 +19,7 @@ type previousComponent struct {
 func PreviousComponentDefinition(data ...utils.KeyValue[string, string]) discordgo.Button {
 	return discordgo.Button{
 		CustomID: interaction.EncodeCustomID("previous", data...),
-		Label:    "Previous",
+		Label:    "⬅️",
 		Style:    discordgo.PrimaryButton,
 	}
 }
@@ -55,6 +55,20 @@ func (c *previousComponent) execute(s *discordgo.Session, i *discordgo.Interacti
 		}
 		return a.Index < b.Index
 	})
+
+	if len(res.Courses) <= presentation.MaxCoursesPerPage {
+		var embed *discordgo.MessageEmbed
+		if len(res.Courses) == 0 {
+			embed = presentation.InvalidCheck()
+		} else {
+			embed = presentation.SuccessfulCheck(res.Courses, res.Counts)
+		}
+		rsp := interaction.InteractionUpdateResponse(
+			interaction.WithEmbeds(embed),
+		)
+		rsp.Data.Components = []discordgo.MessageComponent{}
+		return rsp, nil
+	}
 
 	endIdx := len(res.Courses)
 	for idx, crs := range res.Courses {

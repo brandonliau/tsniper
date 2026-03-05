@@ -9,7 +9,7 @@ import (
 func PageComponentDefinition(currentPage int, totalPages int) discordgo.Button {
 	return discordgo.Button{
 		CustomID: "page",
-		Label:    fmt.Sprintf("Page %d / %d", currentPage, totalPages),
+		Label:    fmt.Sprintf("%d / %d", currentPage, totalPages),
 		Style:    discordgo.SecondaryButton,
 		Disabled: true,
 	}

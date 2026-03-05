@@ -24,11 +24,11 @@ func NewSqliteDB(file string) (*SqliteDB, error) {
 		readDB:  readDB,
 		writeDB: writeDB,
 	}
-	err = sqliteDB.applyPerformanceOptions(readDB, 4, "./pkg/database/perf.sql")
+	err = sqliteDB.applyPerformanceOptions(readDB, 4, "./pkg/database/sqlitePerf.sql")
 	if err != nil {
 		return nil, err
 	}
-	err = sqliteDB.applyPerformanceOptions(writeDB, 1, "./pkg/database/perf.sql")
+	err = sqliteDB.applyPerformanceOptions(writeDB, 1, "./pkg/database/sqlitePerf.sql")
 	if err != nil {
 		return nil, err
 	}
