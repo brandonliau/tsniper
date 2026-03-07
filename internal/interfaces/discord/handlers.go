@@ -104,4 +104,11 @@ func (g *gateway) MemberUpdateHandler(s *discordgo.Session, m *discordgo.GuildMe
 			return
 		}
 	}
+
+	if _, err := g.userService.ClearUserCampus(usecase.ClearUserCampusRequest{
+		UserID: m.User.ID,
+	}); err != nil {
+		g.logger.Error("Failed to clear campus for user %s: %v", m.User.ID, err)
+	}
+	g.logger.Info("Member update event")
 }

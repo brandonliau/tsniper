@@ -82,6 +82,28 @@ func (s *UserService) SetUserCampus(req SetUserCampusRequest) (*SetUserCampusRes
 	return &SetUserCampusResult{}, nil
 }
 
+// --- Clear User Campus ---
+type ClearUserCampusRequest struct {
+	UserID string
+}
+
+type ClearUserCampusResult struct{}
+
+func (s *UserService) ClearUserCampus(req ClearUserCampusRequest) (*ClearUserCampusResult, error) {
+	usr, err := s.userRepository.Get(req.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	usr.ClearCampus()
+
+	if err := s.userRepository.Save(usr); err != nil {
+		return nil, err
+	}
+
+	return &ClearUserCampusResult{}, nil
+}
+
 // --- User Join ---
 type UserJoinRequest struct {
 	UserID string
