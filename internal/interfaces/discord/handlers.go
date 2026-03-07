@@ -88,3 +88,20 @@ func (g *gateway) MemberLeaveHandler(s *discordgo.Session, m *discordgo.GuildMem
 	}
 	g.logger.Info("Member leave event")
 }
+
+func (g *gateway) MemberUpdateHandler(s *discordgo.Session, m *discordgo.GuildMemberUpdate) {
+	for _, roleID := range m.Roles {
+		for campus, cfgRoleID := range g.cfg.Roles {
+			if roleID != cfgRoleID {
+				continue
+			}
+			if _, err := g.userService.SetUserCampus(usecase.SetUserCampusRequest{
+				UserID: m.User.ID,
+				Campus: campus,
+			}); err != nil {
+				g.logger.Error("Failed to update campus for user %s: %v", m.User.ID, err)
+			}
+			return
+		}
+	}
+}

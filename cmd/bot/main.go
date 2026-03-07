@@ -113,6 +113,7 @@ func main() {
 	s.AddHandler(discordGateway.RateLimitHandler)
 	s.AddHandler(discordGateway.MemberJoinHandler)
 	s.AddHandler(discordGateway.MemberLeaveHandler)
+	s.AddHandler(discordGateway.MemberUpdateHandler)
 
 	// Start gateway
 	discordGateway.Start()
