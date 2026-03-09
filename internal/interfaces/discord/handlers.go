@@ -49,7 +49,7 @@ func (g *gateway) InteractionHandler(s *discordgo.Session, i *discordgo.Interact
 }
 
 func (g *gateway) ReadyHandler(s *discordgo.Session, r *discordgo.Ready) {
-	g.session.UpdateCustomStatus("🎯 Locked & Loaded")
+	g.session.UpdateCustomStatus("👁️‍🗨️ Monitoring...")
 	g.logger.Info("Ready event")
 }
 
