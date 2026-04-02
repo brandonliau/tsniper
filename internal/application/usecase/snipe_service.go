@@ -56,7 +56,7 @@ func (s *SnipeService) Add(req AddSnipeRequest) (*AddSnipeResult, error) {
 
 	var szn *scope.Season
 	if req.Season != nil {
-		parsed, err := s.activeScope.ParseSeason(*req.Season)
+		parsed, err := scope.ParseSeason(*req.Season)
 		if err != nil {
 			return nil, err
 		}
@@ -96,7 +96,7 @@ type ReAddSnipeResult struct {
 }
 
 func (s *SnipeService) ReAdd(req ReAddSnipeRequest) (*ReAddSnipeResult, error) {
-	campus, err := scope.ParseCampus(req.Campus)
+	cmp, err := scope.ParseCampus(req.Campus)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func (s *SnipeService) ReAdd(req ReAddSnipeRequest) (*ReAddSnipeResult, error) {
 		return nil, err
 	}
 
-	scp := scope.AcademicScope{Campus: campus, Term: term, Year: req.Year}
+	scp := scope.AcademicScope{Campus: cmp, Term: term, Year: req.Year}
 	if err := s.activeScope.Validate(scp); err != nil {
 		return nil, err
 	}
@@ -156,7 +156,7 @@ func (s *SnipeService) Remove(req RemoveSnipeRequest) (*RemoveSnipeResult, error
 
 	var szn *scope.Season
 	if req.Season != nil {
-		parsed, err := s.activeScope.ParseSeason(*req.Season)
+		parsed, err := scope.ParseSeason(*req.Season)
 		if err != nil {
 			return nil, err
 		}

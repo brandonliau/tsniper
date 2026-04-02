@@ -30,7 +30,7 @@ func SearchCommandDefinition(activeScope ...scope.ActiveScope) *discordgo.Applic
 		for _, szn := range activeScope[0].Seasons() {
 			seasonChoices = append(seasonChoices, &discordgo.ApplicationCommandOptionChoice{
 				Name:  szn.DisplayName(),
-				Value: szn.DisplayName(),
+				Value: szn.Code(),
 			})
 		}
 
@@ -38,7 +38,7 @@ func SearchCommandDefinition(activeScope ...scope.ActiveScope) *discordgo.Applic
 		for _, cmp := range activeScope[0].Campuses() {
 			campusChoices = append(campusChoices, &discordgo.ApplicationCommandOptionChoice{
 				Name:  cmp.DisplayName(),
-				Value: cmp.DisplayName(),
+				Value: cmp.Code(),
 			})
 		}
 	}

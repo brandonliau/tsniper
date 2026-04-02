@@ -63,15 +63,6 @@ func (s *ActiveScope) Validate(scp AcademicScope) error {
 	return nil
 }
 
-func (s *ActiveScope) ParseSeason(displayName string) (Season, error) {
-	for _, szn := range s.seasons {
-		if szn.DisplayName() == displayName {
-			return szn, nil
-		}
-	}
-	return Season{}, ErrSeasonInvalid
-}
-
 func (s *ActiveScope) Scopes() []AcademicScope {
 	return s.scopes
 }

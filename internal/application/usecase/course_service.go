@@ -55,7 +55,7 @@ func (s *CourseService) Search(req SearchCourseRequest) (*SearchCourseResult, er
 
 	var szn *scope.Season
 	if req.Season != nil {
-		parsed, err := s.activeScope.ParseSeason(*req.Season)
+		parsed, err := scope.ParseSeason(*req.Season)
 		if err != nil {
 			return nil, err
 		}

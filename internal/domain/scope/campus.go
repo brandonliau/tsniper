@@ -17,6 +17,10 @@ func ParseCampus(s string) (Campus, error) {
 	}
 }
 
+func (c Campus) Code() string {
+	return string(c)
+}
+
 func (c Campus) DisplayName() string {
 	switch c {
 	case CampusNewBrunswick:

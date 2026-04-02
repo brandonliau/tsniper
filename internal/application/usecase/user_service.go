@@ -68,12 +68,12 @@ func (s *UserService) SetUserCampus(req SetUserCampusRequest) (*SetUserCampusRes
 		return nil, err
 	}
 
-	campus, err := scope.ParseCampus(req.Campus)
+	cmp, err := scope.ParseCampus(req.Campus)
 	if err != nil {
 		return nil, err
 	}
 
-	usr.SetCampus(campus)
+	usr.SetCampus(cmp)
 
 	if err := s.userRepository.Save(usr); err != nil {
 		return nil, err
