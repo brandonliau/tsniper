@@ -58,14 +58,14 @@ func SearchCommandDefinition(activeScope ...scope.ActiveScope) *discordgo.Applic
 			{
 				Type:        discordgo.ApplicationCommandOptionString,
 				Name:        "season",
-				Description: "Season of course to add. If not provided, the default season will be used.",
+				Description: "Season of course to search. If not provided, the default season will be used.",
 				Required:    false,
 				Choices:     seasonChoices,
 			},
 			{
 				Type:        discordgo.ApplicationCommandOptionString,
 				Name:        "campus",
-				Description: "Campus of course to add. If not provided, the default campus will be used.",
+				Description: "Campus of course to search. If not provided, the default campus will be used.",
 				Required:    false,
 				Choices:     campusChoices,
 			},
