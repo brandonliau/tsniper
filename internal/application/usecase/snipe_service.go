@@ -196,7 +196,7 @@ type ClearSnipeResult struct {
 }
 
 func (s *SnipeService) Clear(req ClearSnipeRequest) (*ClearSnipeResult, error) {
-	snipes, err := s.snipeRepository.GetByUser(req.UserID)
+	snipes, err := s.snipeRepository.ListByUser(req.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -220,7 +220,7 @@ type CheckSnipeResult struct {
 }
 
 func (s *SnipeService) Check(req CheckSnipeRequest) (*CheckSnipeResult, error) {
-	snipes, err := s.snipeRepository.GetByUser(req.UserID)
+	snipes, err := s.snipeRepository.ListByUser(req.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -234,7 +234,7 @@ func (s *SnipeService) Check(req CheckSnipeRequest) (*CheckSnipeResult, error) {
 		}
 		courses = append(courses, crs)
 
-		snipes, err := s.snipeRepository.GetByIndex(snp.Index, snp.Scope)
+		snipes, err := s.snipeRepository.ListByIndex(snp.Index, snp.Scope)
 		if err != nil {
 			return nil, err
 		}

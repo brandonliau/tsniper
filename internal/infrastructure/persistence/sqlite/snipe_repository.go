@@ -85,7 +85,7 @@ func (r *SnipeRepositoryImpl) Get(userID string, index string, scp scope.Academi
 	return &snp, nil
 }
 
-func (r *SnipeRepositoryImpl) GetAll() ([]*snipe.Snipe, error) {
+func (r *SnipeRepositoryImpl) ListAll() ([]*snipe.Snipe, error) {
 	rows, err := r.db.Query(
 		`SELECT user_id, course_index, campus, term, year
 		 FROM snipes`,
@@ -111,7 +111,7 @@ func (r *SnipeRepositoryImpl) GetAll() ([]*snipe.Snipe, error) {
 	return snipes, nil
 }
 
-func (r *SnipeRepositoryImpl) GetByUser(userID string) ([]*snipe.Snipe, error) {
+func (r *SnipeRepositoryImpl) ListByUser(userID string) ([]*snipe.Snipe, error) {
 	rows, err := r.db.Query(
 		`SELECT user_id, course_index, campus, term, year
 		 FROM snipes
@@ -139,7 +139,7 @@ func (r *SnipeRepositoryImpl) GetByUser(userID string) ([]*snipe.Snipe, error) {
 	return snipes, nil
 }
 
-func (r *SnipeRepositoryImpl) GetByIndex(index string, scp scope.AcademicScope) ([]*snipe.Snipe, error) {
+func (r *SnipeRepositoryImpl) ListByIndex(index string, scp scope.AcademicScope) ([]*snipe.Snipe, error) {
 	rows, err := r.db.Query(
 		`SELECT user_id, course_index, campus, term, year
 		 FROM snipes

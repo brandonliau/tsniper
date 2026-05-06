@@ -92,7 +92,7 @@ func (s *snipeMonitor) monitorSnipes(ch <-chan time.Time, scp scope.AcademicScop
 				continue
 			}
 
-			snipes, err := s.snipeRepository.GetByIndex(index, scp)
+			snipes, err := s.snipeRepository.ListByIndex(index, scp)
 			if err != nil {
 				s.logger.Error("Failed to get snipes: %v", err)
 				continue
@@ -132,7 +132,7 @@ func (s *snipeMonitor) monitorSnipes(ch <-chan time.Time, scp scope.AcademicScop
 func (s *snipeMonitor) pruneSnipes() error {
 	start := time.Now()
 
-	snipes, err := s.snipeRepository.GetAll()
+	snipes, err := s.snipeRepository.ListAll()
 	if err != nil {
 		return err
 	}
@@ -155,7 +155,7 @@ func (s *snipeMonitor) pruneSnipes() error {
 func (s *snipeMonitor) warmCache() error {
 	start := time.Now()
 
-	snipes, err := s.snipeRepository.GetAll()
+	snipes, err := s.snipeRepository.ListAll()
 	if err != nil {
 		return err
 	}

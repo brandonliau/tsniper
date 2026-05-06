@@ -72,7 +72,7 @@ func (s *CourseService) Search(req SearchCourseRequest) (*SearchCourseResult, er
 		return nil, err
 	}
 
-	snipes, err := s.snipeRepository.GetByIndex(req.Index, scp)
+	snipes, err := s.snipeRepository.ListByIndex(req.Index, scp)
 	if err != nil {
 		return nil, err
 	}

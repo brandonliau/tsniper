@@ -138,7 +138,7 @@ func (s *UserService) Leave(req UserLeaveRequest) (*UserLeaveResult, error) {
 		return nil, err
 	}
 
-	snipes, err := s.snipeRepository.GetByUser(req.UserID)
+	snipes, err := s.snipeRepository.ListByUser(req.UserID)
 	if err != nil {
 		return nil, err
 	}
