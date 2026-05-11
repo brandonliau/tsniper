@@ -1,0 +1,26 @@
+name: CI/CD Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Pull
+        run: |
+          cd /home/bliau/tsniper
+          git reset --hard
+          git pull origin main
+
+      - name: Build
+        run: |
+          cd /home/bliau/tsniper
+          go build ./cmd/bot
+
+      - name: Restart
+        run: |
+          systemctl --user restart tsniper.service
