@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"tsniper/internal/application/event"
+	"tsniper/internal/application/view"
 	"tsniper/internal/config"
-	"tsniper/internal/domain/course"
 	"tsniper/internal/interfaces/discord/component"
 	"tsniper/internal/interfaces/discord/presentation"
 
@@ -66,12 +66,12 @@ func (n *openCourseNotifier) execute(e event.CourseOpen) error {
 	}
 
 	components := []discordgo.MessageComponent{
-		component.RegisterComponentDefinition(e.Course.Index, string(e.Course.Scope.Campus), string(e.Course.Scope.Term), e.Course.Scope.Year),
+		component.RegisterComponentDefinition(e.Course.Index, e.Course.Campus, e.Course.Term, e.Course.Year),
 		component.ResnipeComponentDefinition(
 			utils.KeyValue[string, string]{Key: "index", Value: e.Course.Index},
-			utils.KeyValue[string, string]{Key: "campus", Value: string(e.Course.Scope.Campus)},
-			utils.KeyValue[string, string]{Key: "term", Value: string(e.Course.Scope.Term)},
-			utils.KeyValue[string, string]{Key: "year", Value: e.Course.Scope.Year},
+			utils.KeyValue[string, string]{Key: "campus", Value: e.Course.Campus},
+			utils.KeyValue[string, string]{Key: "term", Value: e.Course.Term},
+			utils.KeyValue[string, string]{Key: "year", Value: e.Course.Year},
 		),
 	}
 
@@ -102,7 +102,7 @@ func (n *openCourseNotifier) execute(e event.CourseOpen) error {
 	return nil
 }
 
-func (n *openCourseNotifier) notificationEmbed(crs *course.Course) *discordgo.MessageEmbed {
+func (n *openCourseNotifier) notificationEmbed(crs *view.CourseView) *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title: fmt.Sprintf("%s (Section %s) has opened!", crs.Title, crs.Section),
 		Fields: []*discordgo.MessageEmbedField{
@@ -132,7 +132,7 @@ func (n *openCourseNotifier) notificationEmbed(crs *course.Course) *discordgo.Me
 	}
 }
 
-func (n *openCourseNotifier) successfulAutosnipeEmbed(crs *course.Course) *discordgo.MessageEmbed {
+func (n *openCourseNotifier) successfulAutosnipeEmbed(crs *view.CourseView) *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title: fmt.Sprintf("Autosniped %s!", crs.Title),
 		Fields: []*discordgo.MessageEmbedField{
@@ -162,7 +162,7 @@ func (n *openCourseNotifier) successfulAutosnipeEmbed(crs *course.Course) *disco
 	}
 }
 
-func (n *openCourseNotifier) failedAutosnipeEmbed(crs *course.Course, message string) *discordgo.MessageEmbed {
+func (n *openCourseNotifier) failedAutosnipeEmbed(crs *view.CourseView, message string) *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title: fmt.Sprintf("Failed to autosnipe %s!", crs.Title),
 		Fields: []*discordgo.MessageEmbedField{

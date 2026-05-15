@@ -1,14 +1,13 @@
 package command
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
 	"tsniper/internal/application/usecase"
+	"tsniper/internal/application/view"
 	"tsniper/internal/config"
-	"tsniper/internal/domain/course"
-	"tsniper/internal/domain/scope"
-	"tsniper/internal/domain/snipe"
 	"tsniper/internal/interfaces/discord/interaction"
 	"tsniper/internal/interfaces/discord/presentation"
 
@@ -22,26 +21,21 @@ type removeCommand struct {
 	customization *config.CustomizationConfig
 }
 
-func RemoveCommandDefinition(activeScope ...scope.ActiveScope) *discordgo.ApplicationCommand {
-	var seasonChoices []*discordgo.ApplicationCommandOptionChoice
-	var campusChoices []*discordgo.ApplicationCommandOptionChoice
+func RemoveCommandDefinition(seasons []view.SeasonOption, campuses []view.CampusOption) *discordgo.ApplicationCommand {
+	seasonChoices := make([]*discordgo.ApplicationCommandOptionChoice, 0, len(seasons))
+	for _, szn := range seasons {
+		seasonChoices = append(seasonChoices, &discordgo.ApplicationCommandOptionChoice{
+			Name:  szn.Name,
+			Value: szn.Value,
+		})
+	}
 
-	if len(activeScope) > 0 {
-		seasonChoices = make([]*discordgo.ApplicationCommandOptionChoice, 0, len(activeScope[0].Seasons()))
-		for _, szn := range activeScope[0].Seasons() {
-			seasonChoices = append(seasonChoices, &discordgo.ApplicationCommandOptionChoice{
-				Name:  szn.DisplayName(),
-				Value: szn.Code(),
-			})
-		}
-
-		campusChoices = make([]*discordgo.ApplicationCommandOptionChoice, 0, len(activeScope[0].Campuses()))
-		for _, cmp := range activeScope[0].Campuses() {
-			campusChoices = append(campusChoices, &discordgo.ApplicationCommandOptionChoice{
-				Name:  cmp.DisplayName(),
-				Value: cmp.Code(),
-			})
-		}
+	campusChoices := make([]*discordgo.ApplicationCommandOptionChoice, 0, len(campuses))
+	for _, cmp := range campuses {
+		campusChoices = append(campusChoices, &discordgo.ApplicationCommandOptionChoice{
+			Name:  cmp.Name,
+			Value: cmp.Code,
+		})
 	}
 
 	return &discordgo.ApplicationCommand{
@@ -99,13 +93,13 @@ func (c *removeCommand) execute(s *discordgo.Session, i *discordgo.InteractionCr
 
 	var rsp *discordgo.InteractionResponse
 	res, err := c.snipeService.Remove(req)
-	switch err {
-	case nil:
+	switch {
+	case err == nil:
 		rsp = interaction.InteractionInitialResponse(
 			interaction.WithEmbeds(c.successfulRemove(res.Course)),
 			interaction.WithEphemeral(),
 		)
-	case scope.ErrScopeInvalid, snipe.ErrSnipeNotFound, course.ErrCourseNotFound:
+	case errors.Is(err, usecase.ErrRemoveSnipeInvalid):
 		rsp = interaction.InteractionInitialResponse(
 			interaction.WithEmbeds(c.invalidRemove(req.Index)),
 			interaction.WithEphemeral(),
@@ -117,7 +111,7 @@ func (c *removeCommand) execute(s *discordgo.Session, i *discordgo.InteractionCr
 	return rsp, nil
 }
 
-func (c *removeCommand) successfulRemove(course *course.Course) *discordgo.MessageEmbed {
+func (c *removeCommand) successfulRemove(course *view.CourseView) *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title: "Successfully Removed Request!",
 		Description: fmt.Sprintf(

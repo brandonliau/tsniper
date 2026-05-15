@@ -1,7 +1,7 @@
 package event
 
 import (
-	"tsniper/internal/domain/course"
+	"tsniper/internal/application/view"
 )
 
 type CourseOpenType int
@@ -16,6 +16,6 @@ const (
 type CourseOpen struct {
 	Type       CourseOpenType
 	ErrMessage string
-	Course     *course.Course
+	Course     *view.CourseView
 	UserIDs    []string
 }

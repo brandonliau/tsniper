@@ -1,11 +1,10 @@
 package component
 
 import (
+	"errors"
 	"fmt"
 
 	"tsniper/internal/application/usecase"
-	"tsniper/internal/domain/scope"
-	"tsniper/internal/domain/snipe"
 	"tsniper/internal/interfaces/discord/interaction"
 
 	"tsniper/pkg/utils"
@@ -45,18 +44,18 @@ func (c *resnipeComponent) execute(s *discordgo.Session, i *discordgo.Interactio
 
 	var rsp *discordgo.InteractionResponse
 	_, err := c.snipeService.ReAdd(req)
-	switch err {
-	case nil:
+	switch {
+	case err == nil:
 		rsp = interaction.InteractionInitialResponse(
 			interaction.WithContent(fmt.Sprintf("Successfully re-added `%s` to your snipe requests.", req.Index)),
 			interaction.WithEphemeral(),
 		)
-	case snipe.ErrSnipeDuplicate:
+	case errors.Is(err, usecase.ErrReAddSnipeDuplicate):
 		rsp = interaction.InteractionInitialResponse(
 			interaction.WithContent(fmt.Sprintf("You are already sniping `%s`.", req.Index)),
 			interaction.WithEphemeral(),
 		)
-	case scope.ErrScopeInvalid:
+	case errors.Is(err, usecase.ErrReAddSnipeInvalid):
 		rsp = interaction.InteractionInitialResponse(
 			interaction.WithContent("Cannot re-add snipe from inactive season."),
 			interaction.WithEphemeral(),

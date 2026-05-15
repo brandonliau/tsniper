@@ -1,6 +1,10 @@
 package usecase
 
 import (
+	"errors"
+	"fmt"
+
+	"tsniper/internal/application/view"
 	"tsniper/internal/domain/course"
 	"tsniper/internal/domain/scope"
 	"tsniper/internal/domain/snipe"
@@ -34,8 +38,13 @@ type AddSnipeRequest struct {
 }
 
 type AddSnipeResult struct {
-	Course *course.Course
+	Course *view.CourseView
 }
+
+var (
+	ErrAddSnipeInvalid   = errors.New("invalid add snipe request")
+	ErrAddSnipeDuplicate = errors.New("snipe already exists")
+)
 
 func (s *SnipeService) Add(req AddSnipeRequest) (*AddSnipeResult, error) {
 	usr, err := s.userRepository.Get(req.UserID)
@@ -47,7 +56,7 @@ func (s *SnipeService) Add(req AddSnipeRequest) (*AddSnipeResult, error) {
 	if req.Campus != nil {
 		parsed, err := scope.ParseCampus(*req.Campus)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("%w: %w", ErrAddSnipeInvalid, err)
 		}
 		cmp = &parsed
 	} else {
@@ -58,28 +67,34 @@ func (s *SnipeService) Add(req AddSnipeRequest) (*AddSnipeResult, error) {
 	if req.Season != nil {
 		parsed, err := scope.ParseSeason(*req.Season)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("%w: %w", ErrAddSnipeInvalid, err)
 		}
 		szn = &parsed
 	}
 
 	scp, err := s.activeScope.Resolve(cmp, szn)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %w", ErrAddSnipeInvalid, err)
 	}
 
 	crs, err := s.courseRepository.Get(req.Index, scp)
 	if err != nil {
+		if errors.Is(err, course.ErrCourseNotFound) {
+			return nil, fmt.Errorf("%w: %w", ErrAddSnipeInvalid, err)
+		}
 		return nil, err
 	}
 
 	snp := snipe.NewSnipe(req.UserID, req.Index, scp)
 	if err := s.snipeRepository.Create(snp); err != nil {
+		if errors.Is(err, snipe.ErrSnipeDuplicate) {
+			return nil, fmt.Errorf("%w: %w", ErrAddSnipeDuplicate, err)
+		}
 		return nil, err
 	}
 	s.snipeCache.Add(snp)
 
-	return &AddSnipeResult{Course: crs}, nil
+	return &AddSnipeResult{Course: view.FromCourse(crs)}, nil
 }
 
 // --- Re-add Snipe ---
@@ -92,37 +107,48 @@ type ReAddSnipeRequest struct {
 }
 
 type ReAddSnipeResult struct {
-	Course *course.Course
+	Course *view.CourseView
 }
+
+var (
+	ErrReAddSnipeInvalid   = errors.New("invalid re-add snipe request")
+	ErrReAddSnipeDuplicate = errors.New("snipe already exists")
+)
 
 func (s *SnipeService) ReAdd(req ReAddSnipeRequest) (*ReAddSnipeResult, error) {
 	cmp, err := scope.ParseCampus(req.Campus)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %w", ErrReAddSnipeInvalid, err)
 	}
 
 	term, err := scope.ParseTerm(req.Term)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %w", ErrReAddSnipeInvalid, err)
 	}
 
 	scp := scope.AcademicScope{Campus: cmp, Term: term, Year: req.Year}
 	if err := s.activeScope.Validate(scp); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %w", ErrReAddSnipeInvalid, err)
 	}
 
 	crs, err := s.courseRepository.Get(req.Index, scp)
 	if err != nil {
+		if errors.Is(err, course.ErrCourseNotFound) {
+			return nil, fmt.Errorf("%w: %w", ErrReAddSnipeInvalid, err)
+		}
 		return nil, err
 	}
 
 	snp := snipe.NewSnipe(req.UserID, req.Index, scp)
 	if err := s.snipeRepository.Create(snp); err != nil {
+		if errors.Is(err, snipe.ErrSnipeDuplicate) {
+			return nil, fmt.Errorf("%w: %w", ErrReAddSnipeDuplicate, err)
+		}
 		return nil, err
 	}
 	s.snipeCache.Add(snp)
 
-	return &ReAddSnipeResult{Course: crs}, nil
+	return &ReAddSnipeResult{Course: view.FromCourse(crs)}, nil
 }
 
 // --- Remove Snipe ---
@@ -134,8 +160,12 @@ type RemoveSnipeRequest struct {
 }
 
 type RemoveSnipeResult struct {
-	Course *course.Course
+	Course *view.CourseView
 }
+
+var (
+	ErrRemoveSnipeInvalid = errors.New("invalid remove snipe request")
+)
 
 func (s *SnipeService) Remove(req RemoveSnipeRequest) (*RemoveSnipeResult, error) {
 	usr, err := s.userRepository.Get(req.UserID)
@@ -147,7 +177,7 @@ func (s *SnipeService) Remove(req RemoveSnipeRequest) (*RemoveSnipeResult, error
 	if req.Campus != nil {
 		parsed, err := scope.ParseCampus(*req.Campus)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("%w: %w", ErrRemoveSnipeInvalid, err)
 		}
 		cmp = &parsed
 	} else {
@@ -158,23 +188,29 @@ func (s *SnipeService) Remove(req RemoveSnipeRequest) (*RemoveSnipeResult, error
 	if req.Season != nil {
 		parsed, err := scope.ParseSeason(*req.Season)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("%w: %w", ErrRemoveSnipeInvalid, err)
 		}
 		szn = &parsed
 	}
 
 	scp, err := s.activeScope.Resolve(cmp, szn)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %w", ErrRemoveSnipeInvalid, err)
 	}
 
 	crs, err := s.courseRepository.Get(req.Index, scp)
 	if err != nil {
+		if errors.Is(err, course.ErrCourseNotFound) {
+			return nil, fmt.Errorf("%w: %w", ErrRemoveSnipeInvalid, err)
+		}
 		return nil, err
 	}
 
 	snp, err := s.snipeRepository.Get(req.UserID, req.Index, scp)
 	if err != nil {
+		if errors.Is(err, snipe.ErrSnipeNotFound) {
+			return nil, fmt.Errorf("%w: %w", ErrRemoveSnipeInvalid, err)
+		}
 		return nil, err
 	}
 
@@ -183,7 +219,7 @@ func (s *SnipeService) Remove(req RemoveSnipeRequest) (*RemoveSnipeResult, error
 	}
 	s.snipeCache.Remove(snp)
 
-	return &RemoveSnipeResult{Course: crs}, nil
+	return &RemoveSnipeResult{Course: view.FromCourse(crs)}, nil
 }
 
 // --- Clear Snipes ---
@@ -215,8 +251,8 @@ type CheckSnipeRequest struct {
 }
 
 type CheckSnipeResult struct {
-	Courses []*course.Course
-	Counts  map[*course.Course]int
+	Courses []*view.CourseView
+	Counts  []int
 }
 
 func (s *SnipeService) Check(req CheckSnipeRequest) (*CheckSnipeResult, error) {
@@ -226,7 +262,7 @@ func (s *SnipeService) Check(req CheckSnipeRequest) (*CheckSnipeResult, error) {
 	}
 
 	var courses []*course.Course
-	counts := make(map[*course.Course]int)
+	var counts []int
 	for _, snp := range snipes {
 		crs, err := s.courseRepository.Get(snp.Index, snp.Scope)
 		if err != nil {
@@ -234,13 +270,12 @@ func (s *SnipeService) Check(req CheckSnipeRequest) (*CheckSnipeResult, error) {
 		}
 		courses = append(courses, crs)
 
-		snipes, err := s.snipeRepository.ListByIndex(snp.Index, snp.Scope)
+		indexed, err := s.snipeRepository.ListByIndex(snp.Index, snp.Scope)
 		if err != nil {
 			return nil, err
 		}
-
-		counts[crs] = len(snipes)
+		counts = append(counts, len(indexed))
 	}
 
-	return &CheckSnipeResult{Courses: courses, Counts: counts}, nil
+	return &CheckSnipeResult{Courses: view.FromCourses(courses), Counts: counts}, nil
 }

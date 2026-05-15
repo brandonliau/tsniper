@@ -1,0 +1,21 @@
+discord:
+  token:
+  application_id:
+  guild_id:
+  roles:
+    NB:
+    NK:
+    CM:
+  channels:
+    boarding:
+    onboarding:
+
+customization:
+  thumbnail:
+
+academic:
+  campuses:
+    -
+  seasons:
+    - term:
+      year:

@@ -5,22 +5,23 @@ import (
 	"strings"
 	"time"
 
-	"tsniper/internal/domain/course"
+	"tsniper/internal/application/view"
+	"tsniper/internal/domain/scope"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-func SuccessfulCheck(courses []*course.Course, counts map[*course.Course]int) *discordgo.MessageEmbed {
+func SuccessfulCheck(courses []*view.CourseView, counts []int) *discordgo.MessageEmbed {
 	var builder strings.Builder
-	for _, crs := range courses {
+	for i, crs := range courses {
 		fmt.Fprintf(
 			&builder,
 			"%s `%s` - %s (**Section %s**) | :eyes: `%d` | %s",
-			EmojiMap[crs.Scope.Term.DisplayName()],
+			EmojiMap[scope.Term(crs.Term).DisplayName()],
 			crs.Index,
 			crs.Title,
 			crs.Section,
-			counts[crs],
+			counts[i],
 			LastOpenDisplayString(crs.LastOpen),
 		)
 	}

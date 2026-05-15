@@ -7,6 +7,7 @@ import (
 
 	"tsniper/internal/application/event"
 	"tsniper/internal/application/usecase"
+	"tsniper/internal/application/view"
 	"tsniper/internal/application/worker"
 	"tsniper/internal/config"
 	"tsniper/internal/domain/scope"
@@ -61,6 +62,8 @@ func main() {
 
 	// Create domain models
 	activeScope := scope.NewActiveScope(cfg.Academic.Campuses, cfg.Academic.Seasons)
+	seasons := view.FromSeasons(activeScope.Seasons())
+	campuses := view.FromCampuses(activeScope.Campuses())
 
 	// Create infrastructure repositories
 	snipeRepository := sqlite.NewSnipeRepository(db)
@@ -88,11 +91,11 @@ func main() {
 	openCourseNotifier := discord.NewOpenCourseNotifier(openCourseEventBus, s, cfg.Customization, logger)
 
 	// Register application commands
-	discordGateway.RegisterCommand(command.AddCommandDefinition(activeScope), command.AddCommandHandler(snipeService, cfg.Customization))
-	discordGateway.RegisterCommand(command.RemoveCommandDefinition(activeScope), command.RemoveCommandHandler(snipeService, cfg.Customization))
+	discordGateway.RegisterCommand(command.AddCommandDefinition(seasons, campuses), command.AddCommandHandler(snipeService, cfg.Customization))
+	discordGateway.RegisterCommand(command.RemoveCommandDefinition(seasons, campuses), command.RemoveCommandHandler(snipeService, cfg.Customization))
 	discordGateway.RegisterCommand(command.ClearCommandDefinition(), command.ClearCommandHandler(snipeService, cfg.Customization))
 	discordGateway.RegisterCommand(command.CheckCommandDefinition(), command.CheckCommandHandler(snipeService))
-	discordGateway.RegisterCommand(command.SearchCommandDefinition(activeScope), command.SearchCommandHandler(courseService, cfg.Customization))
+	discordGateway.RegisterCommand(command.SearchCommandDefinition(seasons, campuses), command.SearchCommandHandler(courseService, cfg.Customization))
 	discordGateway.RegisterCommand(command.StatusCommandDefinition(), command.StatusCommandHandler(systemService, cfg.Customization))
 	discordGateway.RegisterCommand(command.HelpCommandDefinition(), command.HelpCommandHandler(cfg.Discord.ApplicationID, cfg.Customization))
 

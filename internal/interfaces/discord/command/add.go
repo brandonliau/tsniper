@@ -1,14 +1,13 @@
 package command
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
 	"tsniper/internal/application/usecase"
+	"tsniper/internal/application/view"
 	"tsniper/internal/config"
-	"tsniper/internal/domain/course"
-	"tsniper/internal/domain/scope"
-	"tsniper/internal/domain/snipe"
 	"tsniper/internal/interfaces/discord/interaction"
 	"tsniper/internal/interfaces/discord/presentation"
 
@@ -22,26 +21,21 @@ type addCommand struct {
 	customization *config.CustomizationConfig
 }
 
-func AddCommandDefinition(activeScope ...scope.ActiveScope) *discordgo.ApplicationCommand {
-	var seasonChoices []*discordgo.ApplicationCommandOptionChoice
-	var campusChoices []*discordgo.ApplicationCommandOptionChoice
+func AddCommandDefinition(seasons []view.SeasonOption, campuses []view.CampusOption) *discordgo.ApplicationCommand {
+	seasonChoices := make([]*discordgo.ApplicationCommandOptionChoice, 0, len(seasons))
+	for _, szn := range seasons {
+		seasonChoices = append(seasonChoices, &discordgo.ApplicationCommandOptionChoice{
+			Name:  szn.Name,
+			Value: szn.Value,
+		})
+	}
 
-	if len(activeScope) > 0 {
-		seasonChoices = make([]*discordgo.ApplicationCommandOptionChoice, 0, len(activeScope[0].Seasons()))
-		for _, szn := range activeScope[0].Seasons() {
-			seasonChoices = append(seasonChoices, &discordgo.ApplicationCommandOptionChoice{
-				Name:  szn.DisplayName(),
-				Value: szn.Code(),
-			})
-		}
-
-		campusChoices = make([]*discordgo.ApplicationCommandOptionChoice, 0, len(activeScope[0].Campuses()))
-		for _, cmp := range activeScope[0].Campuses() {
-			campusChoices = append(campusChoices, &discordgo.ApplicationCommandOptionChoice{
-				Name:  cmp.DisplayName(),
-				Value: cmp.Code(),
-			})
-		}
+	campusChoices := make([]*discordgo.ApplicationCommandOptionChoice, 0, len(campuses))
+	for _, cmp := range campuses {
+		campusChoices = append(campusChoices, &discordgo.ApplicationCommandOptionChoice{
+			Name:  cmp.Name,
+			Value: cmp.Code,
+		})
 	}
 
 	return &discordgo.ApplicationCommand{
@@ -99,18 +93,18 @@ func (c *addCommand) execute(s *discordgo.Session, i *discordgo.InteractionCreat
 
 	var rsp *discordgo.InteractionResponse
 	res, err := c.snipeService.Add(req)
-	switch err {
-	case nil:
+	switch {
+	case err == nil:
 		rsp = interaction.InteractionInitialResponse(
 			interaction.WithEmbeds(c.successfulAdd(res.Course)),
 			interaction.WithEphemeral(),
 		)
-	case scope.ErrScopeInvalid, course.ErrCourseNotFound:
+	case errors.Is(err, usecase.ErrAddSnipeInvalid):
 		rsp = interaction.InteractionInitialResponse(
 			interaction.WithEmbeds(c.invalidAdd(req.Index)),
 			interaction.WithEphemeral(),
 		)
-	case snipe.ErrSnipeDuplicate:
+	case errors.Is(err, usecase.ErrAddSnipeDuplicate):
 		rsp = interaction.InteractionInitialResponse(
 			interaction.WithEmbeds(c.duplicateAdd(req.Index)),
 			interaction.WithEphemeral(),
@@ -122,7 +116,7 @@ func (c *addCommand) execute(s *discordgo.Session, i *discordgo.InteractionCreat
 	return rsp, nil
 }
 
-func (c *addCommand) successfulAdd(course *course.Course) *discordgo.MessageEmbed {
+func (c *addCommand) successfulAdd(course *view.CourseView) *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title: "Successfully Added Request!",
 		Description: fmt.Sprintf(

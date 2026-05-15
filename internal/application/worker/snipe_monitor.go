@@ -5,6 +5,7 @@ import (
 
 	"tsniper/internal/application/event"
 	"tsniper/internal/application/ports"
+	"tsniper/internal/application/view"
 	"tsniper/internal/domain/course"
 	"tsniper/internal/domain/scope"
 	"tsniper/internal/domain/snipe"
@@ -176,7 +177,7 @@ func (s *snipeMonitor) handleSnipes(snipes []*snipe.Snipe, crs *course.Course) {
 
 	evt := event.CourseOpen{
 		Type:    event.CourseOpenNotification,
-		Course:  crs,
+		Course:  view.FromCourse(crs),
 		UserIDs: userIDs,
 	}
 	s.eventPublisher.PublishBlocking(evt)

@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"tsniper/internal/application/view"
 	"tsniper/internal/domain/scope"
 	"tsniper/internal/domain/snipe"
 	"tsniper/internal/domain/user"
@@ -26,7 +27,7 @@ type GetUserRequest struct {
 }
 
 type GetUserResult struct {
-	User *user.User
+	User *view.UserView
 }
 
 func (s *UserService) Get(req GetUserRequest) (*GetUserResult, error) {
@@ -35,14 +36,14 @@ func (s *UserService) Get(req GetUserRequest) (*GetUserResult, error) {
 		return nil, err
 	}
 
-	return &GetUserResult{User: usr}, nil
+	return &GetUserResult{User: view.FromUser(usr)}, nil
 }
 
 // --- Get All Users ---
 type GetAllUsersRequest struct{}
 
 type GetAllUsersResult struct {
-	Users []*user.User
+	Users []*view.UserView
 }
 
 func (s *UserService) GetAll(req GetAllUsersRequest) (*GetAllUsersResult, error) {
@@ -51,7 +52,7 @@ func (s *UserService) GetAll(req GetAllUsersRequest) (*GetAllUsersResult, error)
 		return nil, err
 	}
 
-	return &GetAllUsersResult{Users: users}, nil
+	return &GetAllUsersResult{Users: view.FromUsers(users)}, nil
 }
 
 // --- Set User Campus ---

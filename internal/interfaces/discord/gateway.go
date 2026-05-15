@@ -44,9 +44,10 @@ func (g *gateway) Start() {
 		userSet[usr.ID] = struct{}{}
 	}
 
-	roleToCampus := make(map[string]string)
-	for campus, roleID := range g.cfg.Roles {
-		roleToCampus[roleID] = campus
+	roleToCampus := map[string]string{
+		g.cfg.Roles.NB: "NB",
+		g.cfg.Roles.NK: "NK",
+		g.cfg.Roles.CM: "CM",
 	}
 
 	memberRoles := make(map[string][]string)

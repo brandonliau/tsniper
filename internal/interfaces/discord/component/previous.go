@@ -1,9 +1,8 @@
 package component
 
 import (
-	"sort"
-
 	"tsniper/internal/application/usecase"
+	"tsniper/internal/application/view"
 	"tsniper/internal/interfaces/discord/interaction"
 	"tsniper/internal/interfaces/discord/presentation"
 
@@ -42,19 +41,7 @@ func (c *previousComponent) execute(s *discordgo.Session, i *discordgo.Interacti
 		return nil, err
 	}
 
-	sort.SliceStable(res.Courses, func(i, j int) bool {
-		a, b := res.Courses[i], res.Courses[j]
-		if a.Scope.Campus != b.Scope.Campus {
-			return a.Scope.Campus < b.Scope.Campus
-		}
-		if a.Scope.Term != b.Scope.Term {
-			return a.Scope.Term < b.Scope.Term
-		}
-		if a.Scope.Year != b.Scope.Year {
-			return a.Scope.Year < b.Scope.Year
-		}
-		return a.Index < b.Index
-	})
+	view.SortCourseViews(res.Courses, res.Counts)
 
 	if len(res.Courses) <= presentation.MaxCoursesPerPage {
 		var embed *discordgo.MessageEmbed
@@ -72,7 +59,7 @@ func (c *previousComponent) execute(s *discordgo.Session, i *discordgo.Interacti
 
 	endIdx := len(res.Courses)
 	for idx, crs := range res.Courses {
-		key := string(crs.Scope.Campus) + string(crs.Scope.Term) + crs.Scope.Year + crs.Index
+		key := crs.Campus + crs.Term + crs.Year + crs.Index
 		if key >= cursor {
 			endIdx = idx
 			break
@@ -80,9 +67,10 @@ func (c *previousComponent) execute(s *discordgo.Session, i *discordgo.Interacti
 	}
 
 	startIdx := max(0, endIdx-presentation.MaxCoursesPerPage)
-	page := res.Courses[startIdx:endIdx]
+	pageCourses := res.Courses[startIdx:endIdx]
+	pageCounts := res.Counts[startIdx:endIdx]
 
-	if len(page) == 0 {
+	if len(pageCourses) == 0 {
 		rsp := interaction.InteractionUpdateResponse(
 			interaction.WithEmbeds(presentation.InvalidCheck()),
 		)
@@ -92,20 +80,20 @@ func (c *previousComponent) execute(s *discordgo.Session, i *discordgo.Interacti
 	previousBtn := PreviousComponentDefinition()
 	previousBtn.Disabled = true
 	if startIdx > 0 {
-		first := page[0]
+		first := pageCourses[0]
 		previousBtn = PreviousComponentDefinition(
-			utils.KeyValue[string, string]{Key: "campus", Value: string(first.Scope.Campus)},
-			utils.KeyValue[string, string]{Key: "term", Value: string(first.Scope.Term)},
-			utils.KeyValue[string, string]{Key: "year", Value: first.Scope.Year},
+			utils.KeyValue[string, string]{Key: "campus", Value: first.Campus},
+			utils.KeyValue[string, string]{Key: "term", Value: first.Term},
+			utils.KeyValue[string, string]{Key: "year", Value: first.Year},
 			utils.KeyValue[string, string]{Key: "index", Value: first.Index},
 		)
 	}
 
-	last := page[len(page)-1]
+	last := pageCourses[len(pageCourses)-1]
 	nextBtn := NextComponentDefinition(
-		utils.KeyValue[string, string]{Key: "campus", Value: string(last.Scope.Campus)},
-		utils.KeyValue[string, string]{Key: "term", Value: string(last.Scope.Term)},
-		utils.KeyValue[string, string]{Key: "year", Value: last.Scope.Year},
+		utils.KeyValue[string, string]{Key: "campus", Value: last.Campus},
+		utils.KeyValue[string, string]{Key: "term", Value: last.Term},
+		utils.KeyValue[string, string]{Key: "year", Value: last.Year},
 		utils.KeyValue[string, string]{Key: "index", Value: last.Index},
 	)
 
@@ -119,7 +107,7 @@ func (c *previousComponent) execute(s *discordgo.Session, i *discordgo.Interacti
 	pageBtn := PageComponentDefinition(currentPage, totalPages)
 
 	rsp := interaction.InteractionUpdateResponse(
-		interaction.WithEmbeds(presentation.SuccessfulCheck(page, res.Counts)),
+		interaction.WithEmbeds(presentation.SuccessfulCheck(pageCourses, pageCounts)),
 		interaction.WithComponents(
 			previousBtn,
 			pageBtn,

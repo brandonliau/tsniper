@@ -90,19 +90,23 @@ func (g *gateway) MemberLeaveHandler(s *discordgo.Session, m *discordgo.GuildMem
 }
 
 func (g *gateway) MemberUpdateHandler(s *discordgo.Session, m *discordgo.GuildMemberUpdate) {
+	campusByRole := map[string]string{
+		g.cfg.Roles.NB: "NB",
+		g.cfg.Roles.NK: "NK",
+		g.cfg.Roles.CM: "CM",
+	}
 	for _, roleID := range m.Roles {
-		for campus, cfgRoleID := range g.cfg.Roles {
-			if roleID != cfgRoleID {
-				continue
-			}
-			if _, err := g.userService.SetUserCampus(usecase.SetUserCampusRequest{
-				UserID: m.User.ID,
-				Campus: campus,
-			}); err != nil {
-				g.logger.Error("Failed to update campus for user %s: %v", m.User.ID, err)
-			}
-			return
+		campus, ok := campusByRole[roleID]
+		if !ok {
+			continue
 		}
+		if _, err := g.userService.SetUserCampus(usecase.SetUserCampusRequest{
+			UserID: m.User.ID,
+			Campus: campus,
+		}); err != nil {
+			g.logger.Error("Failed to update campus for user %s: %v", m.User.ID, err)
+		}
+		return
 	}
 
 	if _, err := g.userService.ClearUserCampus(usecase.ClearUserCampusRequest{

@@ -1,6 +1,10 @@
 package usecase
 
 import (
+	"errors"
+	"fmt"
+
+	"tsniper/internal/application/view"
 	"tsniper/internal/domain/course"
 	"tsniper/internal/domain/scope"
 	"tsniper/internal/domain/snipe"
@@ -32,9 +36,13 @@ type SearchCourseRequest struct {
 }
 
 type SearchCourseResult struct {
-	Course *course.Course
+	Course *view.CourseView
 	Count  int
 }
+
+var (
+	ErrSearchCourseInvalid = errors.New("invalid search course request")
+)
 
 func (s *CourseService) Search(req SearchCourseRequest) (*SearchCourseResult, error) {
 	usr, err := s.userRepository.Get(req.UserID)
@@ -46,7 +54,7 @@ func (s *CourseService) Search(req SearchCourseRequest) (*SearchCourseResult, er
 	if req.Campus != nil {
 		parsed, err := scope.ParseCampus(*req.Campus)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("%w: %w", ErrSearchCourseInvalid, err)
 		}
 		cmp = &parsed
 	} else {
@@ -57,18 +65,21 @@ func (s *CourseService) Search(req SearchCourseRequest) (*SearchCourseResult, er
 	if req.Season != nil {
 		parsed, err := scope.ParseSeason(*req.Season)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("%w: %w", ErrSearchCourseInvalid, err)
 		}
 		szn = &parsed
 	}
 
 	scp, err := s.activeScope.Resolve(cmp, szn)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %w", ErrSearchCourseInvalid, err)
 	}
 
 	crs, err := s.courseRepository.Get(req.Index, scp)
 	if err != nil {
+		if errors.Is(err, course.ErrCourseNotFound) {
+			return nil, fmt.Errorf("%w: %w", ErrSearchCourseInvalid, err)
+		}
 		return nil, err
 	}
 
@@ -77,5 +88,5 @@ func (s *CourseService) Search(req SearchCourseRequest) (*SearchCourseResult, er
 		return nil, err
 	}
 
-	return &SearchCourseResult{Course: crs, Count: len(snipes)}, nil
+	return &SearchCourseResult{Course: view.FromCourse(crs), Count: len(snipes)}, nil
 }

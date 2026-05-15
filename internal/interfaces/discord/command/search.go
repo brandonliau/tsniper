@@ -1,13 +1,13 @@
 package command
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
 	"tsniper/internal/application/usecase"
+	"tsniper/internal/application/view"
 	"tsniper/internal/config"
-	"tsniper/internal/domain/course"
-	"tsniper/internal/domain/scope"
 	"tsniper/internal/interfaces/discord/interaction"
 	"tsniper/internal/interfaces/discord/presentation"
 
@@ -21,26 +21,21 @@ type searchCommand struct {
 	customization *config.CustomizationConfig
 }
 
-func SearchCommandDefinition(activeScope ...scope.ActiveScope) *discordgo.ApplicationCommand {
-	var seasonChoices []*discordgo.ApplicationCommandOptionChoice
-	var campusChoices []*discordgo.ApplicationCommandOptionChoice
+func SearchCommandDefinition(seasons []view.SeasonOption, campuses []view.CampusOption) *discordgo.ApplicationCommand {
+	seasonChoices := make([]*discordgo.ApplicationCommandOptionChoice, 0, len(seasons))
+	for _, szn := range seasons {
+		seasonChoices = append(seasonChoices, &discordgo.ApplicationCommandOptionChoice{
+			Name:  szn.Name,
+			Value: szn.Value,
+		})
+	}
 
-	if len(activeScope) > 0 {
-		seasonChoices = make([]*discordgo.ApplicationCommandOptionChoice, 0, len(activeScope[0].Seasons()))
-		for _, szn := range activeScope[0].Seasons() {
-			seasonChoices = append(seasonChoices, &discordgo.ApplicationCommandOptionChoice{
-				Name:  szn.DisplayName(),
-				Value: szn.Code(),
-			})
-		}
-
-		campusChoices = make([]*discordgo.ApplicationCommandOptionChoice, 0, len(activeScope[0].Campuses()))
-		for _, cmp := range activeScope[0].Campuses() {
-			campusChoices = append(campusChoices, &discordgo.ApplicationCommandOptionChoice{
-				Name:  cmp.DisplayName(),
-				Value: cmp.Code(),
-			})
-		}
+	campusChoices := make([]*discordgo.ApplicationCommandOptionChoice, 0, len(campuses))
+	for _, cmp := range campuses {
+		campusChoices = append(campusChoices, &discordgo.ApplicationCommandOptionChoice{
+			Name:  cmp.Name,
+			Value: cmp.Code,
+		})
 	}
 
 	return &discordgo.ApplicationCommand{
@@ -98,13 +93,13 @@ func (c *searchCommand) execute(s *discordgo.Session, i *discordgo.InteractionCr
 
 	var rsp *discordgo.InteractionResponse
 	res, err := c.courseService.Search(req)
-	switch err {
-	case nil:
+	switch {
+	case err == nil:
 		rsp = interaction.InteractionInitialResponse(
 			interaction.WithEmbeds(c.successfulSearch(res.Course, res.Count)),
 			interaction.WithEphemeral(),
 		)
-	case scope.ErrScopeInvalid, course.ErrCourseNotFound:
+	case errors.Is(err, usecase.ErrSearchCourseInvalid):
 		rsp = interaction.InteractionInitialResponse(
 			interaction.WithEmbeds(c.invalidSearch(req.Index)),
 			interaction.WithEphemeral(),
@@ -116,7 +111,7 @@ func (c *searchCommand) execute(s *discordgo.Session, i *discordgo.InteractionCr
 	return rsp, nil
 }
 
-func (c *searchCommand) successfulSearch(crs *course.Course, count int) *discordgo.MessageEmbed {
+func (c *searchCommand) successfulSearch(crs *view.CourseView, count int) *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title: fmt.Sprintf("%s (`%s`)", crs.Title, crs.CourseString),
 		Fields: []*discordgo.MessageEmbedField{
