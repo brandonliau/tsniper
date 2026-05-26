@@ -180,7 +180,7 @@ func (s *snipeMonitor) handleSnipes(snipes []*snipe.Snipe, crs *course.Course) {
 		Course:  view.FromCourse(crs),
 		UserIDs: userIDs,
 	}
-	s.eventPublisher.PublishBlocking(evt)
+	s.eventPublisher.Publish(evt)
 
 	for _, snp := range snipes {
 		if err := s.snipeRepository.Delete(snp); err != nil {

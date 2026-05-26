@@ -18,11 +18,11 @@ var _ ports.SectionsFeed = (*sectionsFeed)(nil)
 const sectionsURL = "https://classes.rutgers.edu//soc/api/openSections.json"
 
 type sectionsFeed struct {
-	client httpx.Client
+	client *httpx.Client
 }
 
 func NewSectionsFeed() *sectionsFeed {
-	client := httpx.NewRetryClient(
+	client := httpx.NewClient(
 		httpx.WithRetryPolicy(httpx.NoRetry()),
 		httpx.WithBackoffPolicy(httpx.NoBackoff()),
 	)

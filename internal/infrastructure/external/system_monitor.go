@@ -11,13 +11,13 @@ import (
 var _ ports.SystemMonitor = (*SystemMonitor)(nil)
 
 type SystemMonitor struct {
-	client    httpx.Client
+	client    *httpx.Client
 	startTime int64
 }
 
 func NewSystemMonitor() *SystemMonitor {
 	return &SystemMonitor{
-		client: httpx.NewRetryClient(
+		client: httpx.NewClient(
 			httpx.WithRetryPolicy(httpx.NoRetry()),
 			httpx.WithBackoffPolicy(httpx.NoBackoff()),
 		),

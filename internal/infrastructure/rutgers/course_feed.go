@@ -43,12 +43,12 @@ type courseFeedMeeting struct {
 }
 
 type courseFeed struct {
-	client httpx.Client
+	client *httpx.Client
 }
 
 func NewCourseFeed() *courseFeed {
 	return &courseFeed{
-		client: httpx.NewRetryClient(),
+		client: httpx.NewClient(),
 	}
 }
 
