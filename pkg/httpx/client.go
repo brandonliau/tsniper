@@ -37,26 +37,6 @@ func NewClient(opts ...ClientOption) *Client {
 	return r
 }
 
-type ClientOption func(*Client)
-
-func WithHTTPClient(httpClient *http.Client) ClientOption {
-	return func(c *Client) {
-		c.httpClient = httpClient
-	}
-}
-
-func WithRetryPolicy(retryPolicy RetryPolicy) ClientOption {
-	return func(c *Client) {
-		c.retryPolicy = retryPolicy
-	}
-}
-
-func WithBackoffPolicy(backoffPolicy BackoffPolicy) ClientOption {
-	return func(c *Client) {
-		c.backoffPolicy = backoffPolicy
-	}
-}
-
 func (c *Client) Do(req *http.Request) (*http.Response, error) {
 	var bodyBytes []byte
 	if req.Body != nil {
@@ -126,4 +106,24 @@ func (c *Client) Post(url string, contentType string, body io.Reader) (*http.Res
 
 func (c *Client) PostForm(url string, data url.Values) (*http.Response, error) {
 	return c.Post(url, "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
+}
+
+type ClientOption func(*Client)
+
+func WithHTTPClient(httpClient *http.Client) ClientOption {
+	return func(c *Client) {
+		c.httpClient = httpClient
+	}
+}
+
+func WithRetryPolicy(retryPolicy RetryPolicy) ClientOption {
+	return func(c *Client) {
+		c.retryPolicy = retryPolicy
+	}
+}
+
+func WithBackoffPolicy(backoffPolicy BackoffPolicy) ClientOption {
+	return func(c *Client) {
+		c.backoffPolicy = backoffPolicy
+	}
 }

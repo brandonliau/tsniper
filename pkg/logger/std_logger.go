@@ -12,11 +12,11 @@ import (
 var _ Logger = (*StdLogger)(nil)
 
 type StdLogger struct {
-	level  int
+	level  Level
 	logger *log.Logger
 }
 
-func NewStdLogger(level int) *StdLogger {
+func NewStdLogger(level Level) *StdLogger {
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 	return &StdLogger{
 		level:  level,

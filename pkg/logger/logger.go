@@ -1,7 +1,9 @@
 package logger
 
+type Level int
+
 const (
-	LevelDebug = iota
+	LevelDebug Level = iota
 	LevelInfo
 	LevelWarn
 	LevelError

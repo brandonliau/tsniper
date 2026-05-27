@@ -6,6 +6,11 @@ import (
 	"os"
 )
 
+const (
+	readOpenConnections = 4
+	writeOpenConnections = 1
+)
+
 type SqliteDB struct {
 	readDB  *sql.DB
 	writeDB *sql.DB
@@ -24,11 +29,11 @@ func NewSqliteDB(file string) (*SqliteDB, error) {
 		readDB:  readDB,
 		writeDB: writeDB,
 	}
-	err = sqliteDB.applyPerformanceOptions(readDB, 4, "./pkg/database/sqlitePerf.sql")
+	err = sqliteDB.applyPerformanceOptions(readDB, readOpenConnections, "./pkg/database/sqlitePerf.sql")
 	if err != nil {
 		return nil, err
 	}
-	err = sqliteDB.applyPerformanceOptions(writeDB, 1, "./pkg/database/sqlitePerf.sql")
+	err = sqliteDB.applyPerformanceOptions(writeDB, writeOpenConnections, "./pkg/database/sqlitePerf.sql")
 	if err != nil {
 		return nil, err
 	}
