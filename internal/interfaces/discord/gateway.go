@@ -53,7 +53,10 @@ func (g *gateway) Start() {
 	memberRoles := make(map[string][]string)
 	var lastUserID string
 	for {
-		gm, _ := g.session.GuildMembers(g.guildID, lastUserID, 1000)
+		gm, err := g.session.GuildMembers(g.guildID, lastUserID, 1000)
+		if err != nil {
+			g.logger.Fatal("Failed to get guild members: %v", err)
+		}
 		if len(gm) < 1 {
 			break
 		}
